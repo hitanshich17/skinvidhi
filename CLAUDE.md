@@ -37,6 +37,8 @@ AHAs, irritants, sensitivities). AI/ML is used where it solves a real problem:
   where the budget requires it; cheaper options are shown as alternatives.
 - AM and PM cleanser/moisturizer may differ, but a product that fits both equally well is repeated
   (and paid for once).
+- Climate: Open-Meteo, last 30 days for the user's city, cached 24h in Redis. High UV ranks SPF 50+ first;
+  dew point decides humid/dry texture, but skin type wins; pollution is a note only. Results credit Open-Meteo.
 - Sizes: fl oz -> ml, oz -> g; liquids sold in "oz" count as fl oz; creams, balms and sticks keep oz.
 - OTC active ingredients (acne treatments, sunscreens) are stored separately with their percentage.
 - Curated catalog: ~25 products per category; the author approves each list. Claude reads ingredients
@@ -74,8 +76,8 @@ products with manually maintained prices. Product links are plain links.
 1. Foundation: services, local env, CI (done)
 2. Ingredient pipeline: Open Beauty Facts import, ingredient normalization (done)
 3. US product catalog: curated products, prices, categories (done: 100 products, 136 offers)
-4. Quiz + routine rules engine: step templates, clash rules, budget fit, climate from city  <- NEXT
-5. Replacements and feedback: "tried it? liked/disliked", pgvector similarity
+4. Quiz + routine rules engine: step templates, clash rules, budget fit, climate from city (done)
+5. Replacements and feedback: "tried it? liked/disliked", pgvector similarity  <- NEXT
 6. AI: label reading, explanations; ranking model from feedback + evaluation set
 7. Frontend (Next.js), AWS deployment
 8. Community home remedies

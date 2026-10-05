@@ -1,5 +1,6 @@
 package com.skinvidhi.core.routine;
 
+import com.skinvidhi.core.climate.Climate;
 import com.skinvidhi.core.ingredient.IngredientTag;
 import com.skinvidhi.core.routine.RoutinePlan.Note;
 import com.skinvidhi.core.routine.RoutinePlan.Step;
@@ -9,10 +10,26 @@ import java.util.List;
  * The routine as the API returns it. Prices are in cents so the frontend never does float math on money.
  *
  * @param treatmentActive what the night treatment was chosen for (e.g. "RETINOID"), or null if none fits
+ * @param climate the city's climate, or null if no city was given or it wasn't found
  */
 public record RoutineResponse(List<StepPick> am, List<StepPick> pm, IngredientTag treatmentActive,
                               int totalCents, Integer budgetCents, boolean withinBudget, Integer monthlyCents,
-                              List<NoteText> notes) {
+                              CityClimate climate, List<NoteText> notes) {
+
+    /**
+     * What the routine was adjusted for. The page must credit "Weather data by Open-Meteo.com" (CC BY 4.0).
+     *
+     * @param signals which climate rules applied, e.g. HIGH_UV or DRY_AIR
+     */
+    public record CityClimate(String city, String state, double uvIndexMax, double dewPointC, double humidity,
+                              Double pm25, java.util.Set<Climate.Signal> signals) {
+
+        static CityClimate of(Climate c) {
+            return c == null ? null
+                    : new CityClimate(c.city(), c.state(), c.uvIndexMax(), c.dewPointC(), c.humidity(), c.pm25(),
+                            c.signals());
+        }
+    }
 
     /** @param step the step's category: cleanser, treatment, moisturizer or sunscreen */
     public record StepPick(String step, Product product, List<Product> cheaperAlternatives) {
@@ -29,10 +46,10 @@ public record RoutineResponse(List<StepPick> am, List<StepPick> pm, IngredientTa
     public record NoteText(Note code, String text) {
     }
 
-    static RoutineResponse of(Routine routine) {
+    static RoutineResponse of(Routine routine, Climate climate) {
         return new RoutineResponse(steps(routine, "AM_"), steps(routine, "PM_"), routine.treatmentActive(),
                 routine.totalCents(), routine.budgetCents(), routine.withinBudget(), routine.monthlyCents(),
-                routine.notes().stream().map(n -> new NoteText(n, n.text())).toList());
+                CityClimate.of(climate), routine.notes().stream().map(n -> new NoteText(n, n.text())).toList());
     }
 
     private static List<StepPick> steps(Routine routine, String prefix) {

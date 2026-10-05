@@ -1,5 +1,7 @@
 package com.skinvidhi.core.routine;
 
+import com.skinvidhi.core.climate.Climate;
+import com.skinvidhi.core.climate.ClimateService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,15 +17,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class RoutineController {
 
     private final RoutineCatalog catalog;
+    private final ClimateService climateService;
 
-    public RoutineController(RoutineCatalog catalog) {
+    public RoutineController(RoutineCatalog catalog, ClimateService climateService) {
         this.catalog = catalog;
+        this.climateService = climateService;
     }
 
     @PostMapping
     public RoutineResponse build(@RequestBody QuizAnswers answers) {
-        RoutinePlan plan = RoutineRules.plan(answers, catalog.load());
-        return RoutineResponse.of(RoutineSelector.select(plan, answers.budgetCents()));
+        Climate climate = climateService.climateFor(answers.city()).orElse(null);
+        RoutinePlan plan = RoutineRules.plan(answers, catalog.load(), climate);
+        return RoutineResponse.of(RoutineSelector.select(plan, answers.budgetCents()), climate);
     }
 
     /** Unreadable JSON, an unknown answer, or a rule in QuizAnswers broken: 400 with the reason. */

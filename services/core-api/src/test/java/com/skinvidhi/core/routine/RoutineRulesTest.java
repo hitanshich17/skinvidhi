@@ -228,4 +228,54 @@ class RoutineRulesTest {
         var plan = RoutineRules.plan(simple(Concern.DULLNESS), List.of(noOffer, GENTLE_CLEANSER));
         assertThat(ids(plan, Step.AM_CLEANSER)).containsExactly("gentle-cleanser");
     }
+
+    // ---- Climate (docs/routine-rules.md, section 6) ----
+
+    static final com.skinvidhi.core.climate.Climate MILD = new com.skinvidhi.core.climate.Climate("Seattle", "Washington", 4.2, 10.3, 78.7, 5.0);
+    static final com.skinvidhi.core.climate.Climate HUMID = new com.skinvidhi.core.climate.Climate("Miami", "Florida", 6.9, 23.6, 83.3, 6.2);
+    static final com.skinvidhi.core.climate.Climate DRY = new com.skinvidhi.core.climate.Climate("Minneapolis", "Minnesota", 1.5, -14.4, 78.1, 7.0);
+    static final com.skinvidhi.core.climate.Climate SUNNY_SMOGGY = new com.skinvidhi.core.climate.Climate("Phoenix", "Arizona", 9.5, 14.5, 38.4, 10.4);
+
+    @Test
+    void veryHighUvPutsSpf50First() {
+        List<RoutineProduct> sunscreens = List.of(MINERAL_SPF, TINTED_SPF); // SPF 30 cheaper, SPF 50 pricier
+        assertThat(ids(RoutineRules.plan(simple(Concern.OILINESS), sunscreens, MILD), Step.AM_SUNSCREEN))
+                .containsExactly("mineral-spf", "tinted-spf");
+        var sunny = RoutineRules.plan(simple(Concern.OILINESS), sunscreens, SUNNY_SMOGGY);
+        assertThat(ids(sunny, Step.AM_SUNSCREEN)).containsExactly("tinted-spf", "mineral-spf");
+        assertThat(sunny.notes()).contains(Note.HIGH_UV_REAPPLY);
+    }
+
+    @Test
+    void humidCityPutsLightMoisturizersFirstForNormalSkin() {
+        assertThat(ids(RoutineRules.plan(simple(Concern.OILINESS), CATALOG, MILD), Step.AM_MOISTURIZER).get(0))
+                .isNotEqualTo("water-gel");
+        assertThat(ids(RoutineRules.plan(simple(Concern.OILINESS), CATALOG, HUMID), Step.AM_MOISTURIZER))
+                .first().isEqualTo("water-gel");
+    }
+
+    @Test
+    void dryAirPutsRichMoisturizersFirstForNormalSkin() {
+        var cheapGel = p("cheap-water-gel", "moisturizer", 500, HYALURONIC_ACID, 6); // would win on price
+        assertThat(ids(RoutineRules.plan(simple(Concern.DULLNESS), List.of(cheapGel, RICH_CREAM), MILD),
+                Step.AM_MOISTURIZER)).first().isEqualTo("cheap-water-gel");
+        assertThat(ids(RoutineRules.plan(simple(Concern.DULLNESS), List.of(cheapGel, RICH_CREAM), DRY),
+                Step.AM_MOISTURIZER)).first().isEqualTo("rich-cream");
+    }
+
+    @Test
+    void skinTypeWinsOverClimate() {
+        var oily = answers(SkinType.OILY, List.of(Concern.OILINESS), Reactivity.RARELY, Set.of(),
+                ActivesExperience.A_LITTLE, Pregnancy.NO, null);
+        assertThat(ids(RoutineRules.plan(oily, CATALOG, DRY), Step.AM_MOISTURIZER)).first().isEqualTo("water-gel");
+    }
+
+    @Test
+    void pollutedAirAddsANoteOnly() {
+        var clean = RoutineRules.plan(simple(Concern.DULLNESS), CATALOG, MILD);
+        var smoggy = RoutineRules.plan(simple(Concern.DULLNESS), CATALOG,
+                new com.skinvidhi.core.climate.Climate("Fresno", "California", 4.2, 10.3, 60.0, 14.0));
+        assertThat(smoggy.notes()).contains(Note.AIR_POLLUTION);
+        assertThat(smoggy.candidates()).isEqualTo(clean.candidates());
+    }
 }

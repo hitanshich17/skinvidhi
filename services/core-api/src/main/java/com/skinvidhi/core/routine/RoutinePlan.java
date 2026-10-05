@@ -47,6 +47,10 @@ public record RoutinePlan(Map<Step, List<RoutineProduct>> candidates, Ingredient
                 + "while breastfeeding."),
         NO_TREATMENT_FITS("No treatment in our catalog fits all your answers, so your night routine has no "
                 + "treatment step."),
+        HIGH_UV_REAPPLY("The sun is very strong where you live. Reapply sunscreen every 2 hours when outdoors, "
+                + "and right after swimming or sweating."),
+        AIR_POLLUTION("Air pollution in your city is linked to dark spots and wrinkles. Daily sunscreen and "
+                + "cleansing at night are the basics that help."),
         OVER_BUDGET("Even the lowest-priced routine that fits your answers costs more than your budget. "
                 + "This is that routine.");
 

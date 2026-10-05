@@ -77,6 +77,24 @@ These are product rules (the author's decisions), not skin-care evidence.
 | The monthly estimate uses typical amounts per use: cleanser 1 ml, treatment 0.3 ml, moisturizer 0.5 ml, sunscreen 1.2 ml (the "two-finger" amount for the face); twice a day when a product is used AM and PM. Grams count as ml. No estimate is shown if a product's size is unknown. | Author-approved assumptions; the upfront total is what the budget filters on. |
 | Any picked product with an AHA as a main active shows the FDA sunburn alert, not only AHA treatments. | Same evidence as section 3 [9]; covers e.g. a glycolic cleanser. |
 
+## 6. Climate from the city
+
+Data: Open-Meteo (free, no API key, non-commercial use, CC BY 4.0 attribution; city lookup based on GeoNames).
+The app averages the **last 30 days** for the user's city, so the routine follows the season without changing
+day to day. Climate only reorders products and adds notes; it never overrides a safety filter, and the
+user's skin type wins over climate for moisturizer texture.
+
+| Rule | Evidence |
+|---|---|
+| **High UV**: 30-day average of the daily max UV index is 8 or more ("very high" on the EPA scale): SPF 50+ sunscreens rank first (before the tint preference in section 4), and the note *"The sun is very strong where you live. Reapply sunscreen every 2 hours when outdoors, and right after swimming or sweating."* is shown. | **Strong** for reapplying (AAD, verified [18]); **moderate** for SPF 50+: AAD says people apply only 20-50% of the needed amount and "high-SPF sunscreens help to compensate" (verified [13]; study [19]). EPA defines 8+ as "very high", "extra protection needed" (verified [17]). |
+| **Humid**: 30-day average dew point is 65 °F (18 °C) or more: lighter moisturizers rank first, for normal and "not sure" skin. | **Weak** (expert opinion); threshold from the NWS, where dew points of 65 °F and up feel humid and "oppressive" [20]. |
+| **Dry air**: 30-day average dew point below 40 °F (4 °C), or relative humidity below 40%: richer moisturizers (creams) rank first, for normal and "not sure" skin. | **Moderate**: AAD says creams and ointments "add more moisture to skin and are more effective than lotions" and warns about cold, dry winter air (verified [10]). Thresholds are a product rule. |
+| **Polluted air**: 30-day average PM2.5 above 9.0 µg/m³ (the EPA annual standard and the start of AQI "Moderate", 2024): note only, *"Air pollution in your city is linked to dark spots and wrinkles. Daily sunscreen and cleansing at night are the basics that help."* | **Moderate** for the link (systematic review and meta-analysis [22]); **weak** for what helps, so no product changes. EPA thresholds verified [21]. |
+
+Why dew point rather than relative humidity: relative humidity is misleading in cold weather. Checked with
+Open-Meteo data: Minneapolis in January 2026 averaged 78% relative humidity, but a dew point of -14 °C, which
+is very dry air. Miami (dew point 24 °C) is truly humid; Phoenix (38% humidity) is dry.
+
 ## Data gaps to close in step 4c
 
 - ~~SPF is not stored as its own field~~: done (products.spf; the catalog only accepts sunscreens with SPF 30+).
@@ -106,3 +124,9 @@ These are product rules (the author's decisions), not skin-care evidence.
 14. Guide to tinted sunscreens for skin of color, *J Am Acad Dermatol* 2023: https://www.jaad.org/article/S0190-9622(23)02045-5/fulltext
 15. Linus Pauling Institute, Oregon State University, Vitamin C and Skin Health (verified): https://lpi.oregonstate.edu/mic/health-disease/skin-health/vitamin-C
 16. AAD, Dermatologist-approved pregnancy skin care (verified): https://www.aad.org/public/everyday-care/skin-care-secrets/routine/pregnancy-skin-care
+17. EPA, UV Index Scale (verified): https://www.epa.gov/sunsafety/uv-index-scale-0
+18. AAD, How to apply sunscreen (verified): https://www.aad.org/public/everyday-care/sun-protection/shade-clothing-sunscreen/how-to-apply-sunscreen
+19. High-SPF sunscreens (SPF >= 70) may provide ultraviolet protection above minimal recommended levels by adequately compensating for lower sunscreen user application amounts. *J Am Acad Dermatol* 2012: https://www.jaad.org/article/S0190-9622(12)00260-5/abstract
+20. National Weather Service, Dew Point vs Humidity: https://www.weather.gov/arx/why_dewpoint_vs_humidity
+21. EPA, Final Updates to the Air Quality Index for Particulate Matter (2024): https://www.epa.gov/system/files/documents/2024-02/pm-naaqs-air-quality-index-fact-sheet.pdf
+22. Long-Term PM2.5 Exposure and Clinical Skin Aging: A Systematic Review and Meta-Analysis of Pigmentary and Wrinkle Outcomes. *Life* 2026: https://pubmed.ncbi.nlm.nih.gov/41598216/

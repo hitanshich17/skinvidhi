@@ -2,6 +2,8 @@ package com.skinvidhi.core.routine;
 
 import static com.skinvidhi.core.ingredient.IngredientTag.*;
 
+import com.skinvidhi.core.climate.Climate;
+import com.skinvidhi.core.climate.Climate.Signal;
 import com.skinvidhi.core.ingredient.IngredientTag;
 import com.skinvidhi.core.routine.QuizAnswers.ActivesExperience;
 import com.skinvidhi.core.routine.QuizAnswers.Avoid;
@@ -47,14 +49,24 @@ public final class RoutineRules {
     private static final Set<IngredientTag> FRAGRANCE_FAMILY = EnumSet.of(FRAGRANCE, FRAGRANCE_ALLERGEN, ESSENTIAL_OIL);
     private static final Set<IngredientTag> EXFOLIANTS = EnumSet.of(AHA, BHA);
 
-    private final QuizAnswers answers;
+    /** Sunscreens at or above this SPF rank first where the UV index is very high. */
+    static final int HIGH_UV_MIN_SPF = 50;
 
-    private RoutineRules(QuizAnswers answers) {
+    private final QuizAnswers answers;
+    private final Climate climate;
+
+    private RoutineRules(QuizAnswers answers, Climate climate) {
         this.answers = answers;
+        this.climate = climate;
     }
 
     public static RoutinePlan plan(QuizAnswers answers, List<RoutineProduct> catalog) {
-        return new RoutineRules(answers).plan(catalog);
+        return plan(answers, catalog, null);
+    }
+
+    /** @param climate the city's climate, or null if unknown (no city, or the lookup failed) */
+    public static RoutinePlan plan(QuizAnswers answers, List<RoutineProduct> catalog, Climate climate) {
+        return new RoutineRules(answers, climate).plan(catalog);
     }
 
     private RoutinePlan plan(List<RoutineProduct> catalog) {
@@ -106,6 +118,12 @@ public final class RoutineRules {
         }
         if (answers.has(Concern.FLAKY_PATCHES)) {
             notes.add(Note.SEE_DERMATOLOGIST_FOR_PATCHES);
+        }
+        if (climateHas(Signal.HIGH_UV)) {
+            notes.add(Note.HIGH_UV_REAPPLY);
+        }
+        if (climateHas(Signal.POLLUTED)) {
+            notes.add(Note.AIR_POLLUTION);
         }
         return new RoutinePlan(candidates, treatmentActive, notes);
     }
@@ -215,7 +233,14 @@ public final class RoutineRules {
 
     /** How well a moisturizer fits the answers, before price. */
     private Comparator<RoutineProduct> moisturizerFit() {
-        return textureMatch();
+        Texture wanted = textureForSkinType();
+        if (wanted == null && climateHas(Signal.HUMID)) { // skin type wins; climate decides only if it has no say
+            wanted = Texture.LIGHT;
+        } else if (wanted == null && climateHas(Signal.DRY_AIR)) {
+            wanted = Texture.RICH;
+        }
+        Texture finalWanted = wanted;
+        return Comparator.comparing(p -> finalWanted != null && p.texture() != finalWanted);
     }
 
     /**
@@ -259,19 +284,30 @@ public final class RoutineRules {
         boolean tintPreferred = answers.has(Concern.DARK_SPOTS) || answers.has(Concern.UNEVEN_TONE)
                 || (answers.skinTone() != null && answers.skinTone() >= 4);
         Comparator<RoutineProduct> tintFirst = Comparator.comparing(p -> !(tintPreferred && p.tinted()));
-        return rank(sunscreens, tintFirst.thenComparing(byPrice()));
+        boolean highUv = climateHas(Signal.HIGH_UV);
+        Comparator<RoutineProduct> highSpfFirst = Comparator.comparing(p -> highUv && p.spf() < HIGH_UV_MIN_SPF);
+        return rank(sunscreens, highSpfFirst.thenComparing(tintFirst).thenComparing(byPrice()));
     }
 
     // ---- Helpers ----
 
     /** Dry skin prefers rich textures, oily skin light ones. */
     private Comparator<RoutineProduct> textureMatch() {
-        Texture wanted = switch (answers.skinType()) {
+        Texture wanted = textureForSkinType();
+        return Comparator.comparing(p -> wanted != null && p.texture() != wanted);
+    }
+
+    /** The texture the skin type asks for, or null for normal and "not sure" skin. */
+    private Texture textureForSkinType() {
+        return switch (answers.skinType()) {
             case DRY -> Texture.RICH;
             case OILY, COMBINATION -> Texture.LIGHT;
             default -> null;
         };
-        return Comparator.comparing(p -> wanted != null && p.texture() != wanted);
+    }
+
+    private boolean climateHas(Signal signal) {
+        return climate != null && climate.has(signal);
     }
 
     private static Comparator<RoutineProduct> byPrice() {

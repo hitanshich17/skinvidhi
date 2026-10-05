@@ -29,6 +29,9 @@ class RoutineControllerTest {
     @MockitoBean
     private RoutineCatalog catalog;
 
+    @MockitoBean
+    private com.skinvidhi.core.climate.ClimateService climateService;
+
     private static RoutineProduct p(String id, String category, Integer spf, int priceCents, Object... tagPositions) {
         Map<com.skinvidhi.core.ingredient.IngredientTag, Integer> positions = new HashMap<>();
         for (int i = 0; i < tagPositions.length; i += 2) {
@@ -91,6 +94,36 @@ class RoutineControllerTest {
                 """)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.notes[?(@.code == 'SEE_DERMATOLOGIST_FOR_PATCHES')].text").isNotEmpty());
+    }
+
+    @Test
+    void cityClimateIsAppliedAndReturned() throws Exception {
+        when(climateService.climateFor("Phoenix, AZ")).thenReturn(java.util.Optional.of(
+                new com.skinvidhi.core.climate.Climate("Phoenix", "Arizona", 9.5, 14.5, 38.4, 10.4)));
+
+        postAnswers("""
+                {"skinType": "NORMAL", "concerns": ["DULLNESS"], "reactivity": "RARELY",
+                 "activesExperience": "A_LITTLE", "pregnancy": "NO", "city": "Phoenix, AZ"}
+                """)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.climate.city").value("Phoenix"))
+                .andExpect(jsonPath("$.climate.signals").value(org.hamcrest.Matchers.containsInAnyOrder(
+                        "HIGH_UV", "DRY_AIR", "POLLUTED")))
+                .andExpect(jsonPath("$.notes[*].code").value(org.hamcrest.Matchers.hasItems(
+                        "HIGH_UV_REAPPLY", "AIR_POLLUTION")));
+    }
+
+    @Test
+    void unknownCityStillGivesARoutine() throws Exception {
+        when(climateService.climateFor("Atlantis")).thenReturn(java.util.Optional.empty());
+
+        postAnswers("""
+                {"skinType": "NORMAL", "concerns": ["DULLNESS"], "reactivity": "RARELY",
+                 "activesExperience": "A_LITTLE", "pregnancy": "NO", "city": "Atlantis"}
+                """)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.climate").doesNotExist())
+                .andExpect(jsonPath("$.am", hasSize(3)));
     }
 
     @Test
