@@ -160,8 +160,8 @@ These offers have a price but no size, and the pages don't state it in a form Cl
 - [x] **Anua Niacinamide 10 + TXA 4 Serum** ($24, brand): size. id `anua-niacinamide-10-txa-4-serum`
 - [x] **CeraVe PM Facial Moisturizing Lotion** ($19.99, brand): size. The page data hints at 2 fl oz, but
   it's also sold in 3 fl oz; please confirm which size $19.99 is for. id `cerave-pm-facial-moisturizing-lotion`
-- [ ] **Glow Recipe Watermelon Glow Dew Shield SPF 30** ($35, brand): size. id `glow-recipe-watermelon-glow-dew-shield-spf30`
-- [ ] **Paula's Choice 2% BHA Liquid Exfoliant** ($37, brand): size. id `paulas-choice-2-bha-liquid-exfoliant`
-- [ ] **Vanicream Daily Facial Moisturizer** ($13.97, Walmart): size. id `vanicream-daily-facial-moisturizer`
-- [ ] **Drunk Elephant Umbra Sheer Mineral Cream SPF 30** ($42, brand): size. id `drunk-elephant-umbra-sheer-spf30`
-- [ ] **SKIN1004 Centella Air-Fit Suncream Plus** ($11.26, YesStyle): size. id `skin1004-centella-air-fit-suncream-plus`
+- [x] **Glow Recipe Watermelon Glow Dew Shield SPF 30** ($35, brand): size. id `glow-recipe-watermelon-glow-dew-shield-spf30`
+- [x] **Paula's Choice 2% BHA Liquid Exfoliant** ($37, brand): size. id `paulas-choice-2-bha-liquid-exfoliant`
+- [x] **Vanicream Daily Facial Moisturizer** ($13.97, Walmart): size. id `vanicream-daily-facial-moisturizer`
+- [x] **Drunk Elephant Umbra Sheer Mineral Cream SPF 30** ($42, brand): size. id `drunk-elephant-umbra-sheer-spf30`
+- [x] **SKIN1004 Centella Air-Fit Suncream Plus** ($16.20 now, YesStyle): size. id `skin1004-centella-air-fit-suncream-plus`
