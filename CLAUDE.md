@@ -39,6 +39,11 @@ AHAs, irritants, sensitivities). AI/ML is used where it solves a real problem:
   (and paid for once).
 - Climate: Open-Meteo, last 30 days for the user's city, cached 24h in Redis. High UV ranks SPF 50+ first;
   dew point decides humid/dry texture, but skin type wins; pollution is a note only. Results credit Open-Meteo.
+- Feedback (docs/feedback.md): anonymous client ID, no accounts; stored answers exclude pregnancy and city.
+  Liked = kept in its step (if still safe) at $0 upfront. Disliked = never shown again; optional reason
+  (irritated [default], didn't work, texture/smell, too pricey) picks the replacement. Suspects = tagged
+  irritants + main actives, plus ingredients shared by 2+ dislikes and no like. pgvector similarity to
+  liked products only breaks ties.
 - Sizes: fl oz -> ml, oz -> g; liquids sold in "oz" count as fl oz; creams, balms and sticks keep oz.
 - OTC active ingredients (acne treatments, sunscreens) are stored separately with their percentage.
 - Curated catalog: ~25 products per category; the author approves each list. Claude reads ingredients
