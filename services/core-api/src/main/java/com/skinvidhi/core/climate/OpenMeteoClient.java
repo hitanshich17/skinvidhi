@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -20,6 +21,7 @@ public class OpenMeteoClient {
     private final RestClient http;
     private final OpenMeteoProperties props;
 
+    @Autowired // the constructor Spring uses; the other one is for tests
     public OpenMeteoClient(OpenMeteoProperties props) {
         this(RestClient.builder().requestFactory(timeouts(props)).build(), props);
     }
