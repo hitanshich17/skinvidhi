@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 class CatalogCsvReaderTest {
 
     private static final LocalDate TODAY = LocalDate.of(2026, 9, 23);
-    private static final String PRODUCTS_HEADER = "id,brand,name,category,actives,ingredients,image_url,source_url,import\n";
+    private static final String PRODUCTS_HEADER = "id,brand,name,category,actives,ingredients,image_url,source_url,import,spf\n";
     private static final String OFFERS_HEADER = "product_id,retailer,price_usd,size,unit,url,checked_on\n";
     private static final String CLEANSER =
             "gentle-cleanser,Brand A,Gentle Cleanser,cleanser,,\"Aqua, Glycerin, Cetearyl Alcohol\",,https://brand-a.example/cleanser\n";
@@ -85,7 +85,7 @@ class CatalogCsvReaderTest {
     void readsActivesWithPercentages() throws IOException {
         Catalog catalog = read("""
                 acne-wash,Brand B,Acne Wash,cleanser,Benzoyl Peroxide 4%,"Water, Glycerin",,https://b.example/wash
-                mineral-spf,Brand C,Mineral SPF 30,sunscreen,Zinc Oxide 9%; Titanium Dioxide 3.5 %,"Water, Glycerin",,https://c.example/spf
+                mineral-spf,Brand C,Mineral SPF 30,sunscreen,Zinc Oxide 9%; Titanium Dioxide 3.5 %,"Water, Glycerin",,https://c.example/spf,,30
                 """, "");
 
         assertThat(catalog.products()).extracting(CatalogProduct::actives).containsExactly(
@@ -96,7 +96,7 @@ class CatalogCsvReaderTest {
     @Test
     void readsImportFlag() throws IOException {
         Catalog catalog = read("""
-                korean-spf,Brand K,Sun Cream,sunscreen,,"Water, Glycerin",,https://k.example/sun,yes
+                korean-spf,Brand K,Sun Cream,sunscreen,,"Water, Glycerin",,https://k.example/sun,yes,50
                 """, "");
 
         assertThat(catalog.products()).singleElement().extracting(CatalogProduct::imported).isEqualTo(true);
@@ -105,11 +105,30 @@ class CatalogCsvReaderTest {
     @Test
     void usSunscreenNeedsActivesAndImportMustBeYes() {
         assertThat(errors("""
-                us-spf,Brand U,Sun Lotion,sunscreen,,"Water, Glycerin",,https://u.example/sun,
-                other-spf,Brand U,Sun Gel,sunscreen,Zinc Oxide 9%,"Water, Glycerin",,https://u.example/gel,true
+                us-spf,Brand U,Sun Lotion,sunscreen,,"Water, Glycerin",,https://u.example/sun,,30
+                other-spf,Brand U,Sun Gel,sunscreen,Zinc Oxide 9%,"Water, Glycerin",,https://u.example/gel,true,30
                 """, "")).containsExactly(
                 "products.csv:2: a US sunscreen must list its UV filters in actives, e.g. 'Zinc Oxide 9%' (or set import to 'yes')",
                 "products.csv:3: import must be 'yes' or empty, not 'true'");
+    }
+
+    @Test
+    void readsSpfAndRequiresThirtyOrMoreForSunscreens() throws IOException {
+        Catalog catalog = read("""
+                spf-50,Brand S,Sun 50,sunscreen,Zinc Oxide 20%,"Water",,https://s.example/50,,50
+                """, "");
+        assertThat(catalog.products()).singleElement().extracting(CatalogProduct::spf).isEqualTo(50);
+
+        assertThat(errors("""
+                no-spf,Brand S,Sun,sunscreen,Zinc Oxide 20%,"Water",,https://s.example/a,,
+                low-spf,Brand S,Sun 15,sunscreen,Zinc Oxide 20%,"Water",,https://s.example/b,,15
+                text-spf,Brand S,Sun,sunscreen,Zinc Oxide 20%,"Water",,https://s.example/c,,50+
+                cream-spf,Brand S,Cream,moisturizer,,"Water",,https://s.example/d,,30
+                """, "")).containsExactly(
+                "products.csv:2: a sunscreen needs its SPF in the spf column, e.g. 50",
+                "products.csv:3: spf must be between 30 and 100 (SkinVidhi only uses SPF 30+), not 15",
+                "products.csv:4: spf must be a whole number like 50, not '50+'",
+                "products.csv:5: spf is only for sunscreens");
     }
 
     @Test
@@ -158,6 +177,6 @@ class CatalogCsvReaderTest {
                 new StringReader("id,brand,name\nx,y,z\n"), new StringReader(OFFERS_HEADER), TODAY)).errors();
 
         assertThat(errors).containsExactly(
-                "products.csv: header must contain id,brand,name,category,actives,ingredients,image_url,source_url,import");
+                "products.csv: header must contain id,brand,name,category,actives,ingredients,image_url,source_url,import,spf");
     }
 }

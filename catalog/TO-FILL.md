@@ -146,3 +146,8 @@ last column, `import`.
 - [x] **La Roche-Posay Anthelios Melt-in Milk SPF 60**: **price + size only** (product added from its DailyMed label). id `la-roche-posay-anthelios-melt-in-milk-spf60`
 - [x] **La Roche-Posay Anthelios Mineral Tinted SPF 50**: **price + size only** (product added from its DailyMed label). id `la-roche-posay-anthelios-mineral-tinted-spf50`
 - [x] ~~**Aveeno Protect + Soothe Mineral Sunscreen Stick SPF 50**~~: replaced by Aveeno Protect + Hydrate Sunscreen Lotion SPF 60.
+
+## Reopened
+
+- [ ] **Aestura Derma UV365 Barrier Hydro Mineral Sunscreen**: US price + size. The Amazon link given earlier
+  (B09JDXC8PM) turned out to be SKIN1004 Air-Fit Suncream Plus, so that offer moved there.

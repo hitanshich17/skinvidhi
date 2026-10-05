@@ -31,7 +31,7 @@ public final class CatalogCsvReader {
     public static final Set<String> ROUTINE_CATEGORIES = Set.of("cleanser", "treatment", "moisturizer", "sunscreen");
 
     static final List<String> PRODUCT_COLUMNS =
-            List.of("id", "brand", "name", "category", "actives", "ingredients", "image_url", "source_url", "import");
+            List.of("id", "brand", "name", "category", "actives", "ingredients", "image_url", "source_url", "import", "spf");
     static final List<String> OFFER_COLUMNS =
             List.of("product_id", "retailer", "price_usd", "size", "unit", "url", "checked_on");
 
@@ -40,9 +40,15 @@ public final class CatalogCsvReader {
     /** One active ingredient with its concentration, e.g. "Benzoyl Peroxide 4%". */
     private static final Pattern ACTIVE = Pattern.compile("^(.+?)\\s+(\\d+(?:\\.\\d+)?)\\s*%$");
 
-    /** {@code imported}: sold in the US only as an import (for sunscreens: not FDA-approved). */
+    /** Lowest SPF a sunscreen may have to be in the catalog (AAD recommends SPF 30 or higher). */
+    public static final int MIN_SPF = 30;
+
+    /**
+     * {@code imported}: sold in the US only as an import (for sunscreens: not FDA-approved).
+     * {@code spf}: sunscreens only; "SPF 50+" is written as 50.
+     */
     public record CatalogProduct(String id, String brand, String name, String category, List<Active> actives,
-                                 String ingredients, String imageUrl, String sourceUrl, boolean imported) {
+                                 String ingredients, String imageUrl, String sourceUrl, boolean imported, Integer spf) {
     }
 
     /** An OTC drug active ingredient, listed on the label separately from the other ingredients. */
@@ -162,6 +168,7 @@ public final class CatalogCsvReader {
             errors.add(where + ": import must be 'yes' or empty, not '" + importText + "'");
         }
         boolean imported = "yes".equals(importText);
+        Integer spf = spf(where, category, optional(row, "spf"));
         if ("sunscreen".equals(category) && !imported && actives.isEmpty()) {
             errors.add(where + ": a US sunscreen must list its UV filters in actives, e.g. 'Zinc Oxide 9%'"
                     + " (or set import to 'yes')");
@@ -179,7 +186,7 @@ public final class CatalogCsvReader {
         checkUrl(where, "source_url", sourceUrl);
         checkUrl(where, "image_url", imageUrl);
         return errors.size() == before
-                ? new CatalogProduct(id, brand, name, category, actives, ingredients, imageUrl, sourceUrl, imported)
+                ? new CatalogProduct(id, brand, name, category, actives, ingredients, imageUrl, sourceUrl, imported, spf)
                 : null;
     }
 
@@ -234,6 +241,30 @@ public final class CatalogCsvReader {
         return errors.size() == before
                 ? new CatalogOffer(productId, retailer, priceCents, size, url, checkedOn)
                 : null;
+    }
+
+    private Integer spf(String where, String category, String text) {
+        boolean sunscreen = "sunscreen".equals(category);
+        if (text == null) {
+            if (sunscreen) {
+                errors.add(where + ": a sunscreen needs its SPF in the spf column, e.g. 50");
+            }
+            return null;
+        }
+        if (!sunscreen) {
+            errors.add(where + ": spf is only for sunscreens");
+            return null;
+        }
+        if (!text.matches("\\d{1,3}")) {
+            errors.add(where + ": spf must be a whole number like 50, not '" + text + "'");
+            return null;
+        }
+        int spf = Integer.parseInt(text);
+        if (spf < MIN_SPF || spf > 100) {
+            errors.add(where + ": spf must be between " + MIN_SPF + " and 100 (SkinVidhi only uses SPF 30+), not " + spf);
+            return null;
+        }
+        return spf;
     }
 
     /** Parses "Zinc Oxide 9%; Titanium Dioxide 3%". */

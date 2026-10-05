@@ -78,6 +78,15 @@ class CatalogImporterIntegrationTest {
     }
 
     @Test
+    void storesSpfForSunscreens() throws IOException {
+        importer.importCatalog(CatalogCsvReaderTest.read("""
+                sun,Brand S,Sun 50,sunscreen,Zinc Oxide 20%,"Water, Glycerin",,https://s.example/sun,,50
+                """, ""));
+
+        assertThat(jdbc.queryForObject("SELECT spf FROM products WHERE source_id = 'sun'", Integer.class)).isEqualTo(50);
+    }
+
+    @Test
     void tagsIngredientsAfterImport() throws IOException {
         importer.importCatalog(CatalogCsvReaderTest.read("""
                 tagged,Brand T,Tagged Cream,moisturizer,,"Aqua, Fragrance (Parfum), Ethyl Macadamiate, Lactic Acid/Glycolic Acid Copolymer, Citric Acid",,https://t.example/p

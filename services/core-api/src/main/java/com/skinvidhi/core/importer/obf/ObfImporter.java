@@ -118,7 +118,7 @@ public class ObfImporter {
                 .flatMap(i -> resolver.resolve(i).stream()).distinct().toList();
 
         ProductData product = new ProductData(SOURCE, code, firstBrand(p.brands()), name,
-                ObfCategories.categorize(p.categoriesTags()), ingredientsText, null, PRODUCT_PAGE + code, false);
+                ObfCategories.categorize(p.categoriesTags()), ingredientsText, null, PRODUCT_PAGE + code, false, null);
         tx.executeWithoutResult(status ->
                 productWriter.replaceIngredients(productWriter.upsert(product), ingredientIds));
         return Outcome.IMPORTED;
