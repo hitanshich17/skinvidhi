@@ -33,6 +33,10 @@ AHAs, irritants, sensitivities). AI/ML is used where it solves a real problem:
 - Products outside the four routine categories stay in the catalog but are never picked for routines.
 - A product can have several offers (retailer + size + price); the app shows the cheapest and compares.
 - Budget: filter on the upfront total, and also show an estimated monthly cost.
+  "Best match within budget": start from each step's best-ranked product and swap to cheaper ones only
+  where the budget requires it; cheaper options are shown as alternatives.
+- AM and PM cleanser/moisturizer may differ, but a product that fits both equally well is repeated
+  (and paid for once).
 - Sizes: fl oz -> ml, oz -> g; liquids sold in "oz" count as fl oz; creams, balms and sticks keep oz.
 - OTC active ingredients (acne treatments, sunscreens) are stored separately with their percentage.
 - Curated catalog: ~25 products per category; the author approves each list. Claude reads ingredients

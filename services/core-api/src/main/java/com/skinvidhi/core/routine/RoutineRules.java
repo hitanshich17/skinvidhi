@@ -59,7 +59,10 @@ public final class RoutineRules {
 
     private RoutinePlan plan(List<RoutineProduct> catalog) {
         List<Note> notes = new ArrayList<>();
-        List<RoutineProduct> allowed = catalog.stream().filter(this::passesEveryStepFilters).toList();
+        List<RoutineProduct> allowed = catalog.stream()
+                .filter(p -> p.offer() != null) // can't be bought, so never picked
+                .filter(this::passesEveryStepFilters)
+                .toList();
 
         IngredientTag treatmentActive = null;
         List<RoutineProduct> treatments = List.of();
@@ -80,11 +83,13 @@ public final class RoutineRules {
 
         Map<Step, List<RoutineProduct>> candidates = new EnumMap<>(Step.class);
         candidates.put(Step.PM_TREATMENT, treatments);
-        candidates.put(Step.AM_CLEANSER, rank(cleansers(allowed, retinoidNight, true), cleanserOrder()));
-        candidates.put(Step.PM_CLEANSER, rank(cleansers(allowed, retinoidNight, false), cleanserOrder()));
-        List<RoutineProduct> moisturizers = rank(moisturizers(allowed, retinoidNight), moisturizerOrder());
-        candidates.put(Step.AM_MOISTURIZER, moisturizers);
-        candidates.put(Step.PM_MOISTURIZER, moisturizers);
+        candidates.put(Step.AM_CLEANSER, rank(cleansers(allowed, retinoidNight, true), cleanserFit().thenComparing(byPrice())));
+        candidates.put(Step.PM_CLEANSER, rank(cleansers(allowed, retinoidNight, false), cleanserFit().thenComparing(byPrice())));
+        preferRepeat(candidates, Step.AM_CLEANSER, Step.PM_CLEANSER, cleanserFit());
+        List<RoutineProduct> moisturizers = moisturizers(allowed, retinoidNight);
+        candidates.put(Step.AM_MOISTURIZER, rank(moisturizers, moisturizerFit().thenComparing(byPrice())));
+        candidates.put(Step.PM_MOISTURIZER, rank(moisturizers, moisturizerFit().thenComparing(byPrice())));
+        preferRepeat(candidates, Step.AM_MOISTURIZER, Step.PM_MOISTURIZER, moisturizerFit());
         candidates.put(Step.AM_SUNSCREEN, sunscreens(allowed, retinoidNight));
 
         if (treatmentActive == null) {
@@ -190,10 +195,11 @@ public final class RoutineRules {
         return inCategory(allowed, "cleanser").stream().filter(keep).toList();
     }
 
-    private Comparator<RoutineProduct> cleanserOrder() {
+    /** How well a cleanser fits the answers, before price. */
+    private Comparator<RoutineProduct> cleanserFit() {
         Comparator<RoutineProduct> acneFirst = Comparator.comparing(p ->
                 !(answers.has(Concern.BREAKOUTS) && (p.hasMainActive(BENZOYL_PEROXIDE) || p.hasMainActive(BHA))));
-        return acneFirst.thenComparing(textureMatch()).thenComparing(byPrice());
+        return acneFirst.thenComparing(textureMatch());
     }
 
     private List<RoutineProduct> moisturizers(List<RoutineProduct> allowed, boolean retinoidNight) {
@@ -207,8 +213,37 @@ public final class RoutineRules {
                 .toList();
     }
 
-    private Comparator<RoutineProduct> moisturizerOrder() {
-        return textureMatch().thenComparing(byPrice());
+    /** How well a moisturizer fits the answers, before price. */
+    private Comparator<RoutineProduct> moisturizerFit() {
+        return textureMatch();
+    }
+
+    /**
+     * If one product fits the AM and the PM step as well as any other product does, it goes first in both
+     * lists, so the routine repeats it instead of buying two (author's decision).
+     */
+    private static void preferRepeat(Map<Step, List<RoutineProduct>> candidates, Step am, Step pm,
+                                     Comparator<RoutineProduct> fit) {
+        List<RoutineProduct> amList = candidates.get(am);
+        List<RoutineProduct> pmList = candidates.get(pm);
+        if (amList.isEmpty() || pmList.isEmpty()) {
+            return;
+        }
+        List<RoutineProduct> pmBest = pmList.stream().filter(p -> fit.compare(p, pmList.get(0)) == 0).toList();
+        amList.stream()
+                .filter(p -> fit.compare(p, amList.get(0)) == 0)
+                .filter(pmBest::contains)
+                .min(byPrice())
+                .ifPresent(shared -> {
+                    candidates.put(am, moveToFront(amList, shared));
+                    candidates.put(pm, moveToFront(pmList, shared));
+                });
+    }
+
+    private static List<RoutineProduct> moveToFront(List<RoutineProduct> list, RoutineProduct first) {
+        List<RoutineProduct> moved = new ArrayList<>(List.of(first));
+        list.stream().filter(p -> !p.equals(first)).forEach(moved::add);
+        return moved;
     }
 
     private List<RoutineProduct> sunscreens(List<RoutineProduct> allowed, boolean retinoidNight) {

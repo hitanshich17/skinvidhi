@@ -91,4 +91,17 @@ class RoutineCatalogIntegrationTest {
         assertThat(plan.candidates().values()).allSatisfy(ps -> assertThat(ps).noneMatch(p -> p.hasAny(banned)));
         assertThat(plan.candidates().get(Step.AM_SUNSCREEN)).isNotEmpty();
     }
+
+    @Test
+    void budgetIsRespectedOrReported() {
+        RoutinePlan plan = RoutineRules.plan(answers(SkinType.COMBINATION, List.of(Concern.BREAKOUTS, Concern.DARK_SPOTS),
+                Reactivity.SOMETIMES, Set.of(), ActivesExperience.A_LITTLE, Pregnancy.NO), catalog);
+
+        Routine unlimited = RoutineSelector.select(plan, null);
+        assertThat(unlimited.picks()).hasSize(Step.values().length);
+
+        Routine tight = RoutineSelector.select(plan, unlimited.totalCents() - 1000);
+        assertThat(tight.totalCents()).isLessThan(unlimited.totalCents());
+        assertThat(tight.withinBudget() || tight.notes().contains(RoutinePlan.Note.OVER_BUDGET)).isTrue();
+    }
 }

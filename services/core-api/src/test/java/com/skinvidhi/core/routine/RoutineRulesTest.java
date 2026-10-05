@@ -35,7 +35,9 @@ class RoutineRulesTest {
         for (int i = 0; i < tagPositions.length; i += 2) {
             positions.put((IngredientTag) tagPositions[i], (Integer) tagPositions[i + 1]);
         }
-        return new RoutineProduct(id, "Brand", id.replace('-', ' '), category, spf, false, positions, priceCents);
+        return new RoutineProduct(id, "Brand", id.replace('-', ' '), category, spf, false, positions,
+                new RoutineProduct.Offer("brand", priceCents, java.math.BigDecimal.valueOf(100), "ml",
+                        "https://example.com/" + id));
     }
 
     // Catalog fixtures
@@ -202,5 +204,28 @@ class RoutineRulesTest {
         assertThat(plan.treatmentActive()).isNull();
         assertThat(plan.candidates().get(Step.PM_TREATMENT)).isEmpty();
         assertThat(plan.notes()).contains(Note.NO_TREATMENT_FITS);
+    }
+
+    @Test
+    void sameProductRepeatsWhenItFitsAmAndPm() {
+        var plan = RoutineRules.plan(simple(Concern.DULLNESS), CATALOG);
+        assertThat(ids(plan, Step.AM_CLEANSER).get(0)).isEqualTo(ids(plan, Step.PM_CLEANSER).get(0));
+        assertThat(ids(plan, Step.AM_MOISTURIZER).get(0)).isEqualTo(ids(plan, Step.PM_MOISTURIZER).get(0));
+    }
+
+    @Test
+    void amAndPmDifferWhenNoProductFitsBoth() {
+        // Experienced user on a retinoid night: the benzoyl peroxide cleanser is AM-only.
+        var plan = RoutineRules.plan(answers(SkinType.OILY, List.of(Concern.BREAKOUTS), Reactivity.RARELY, Set.of(),
+                ActivesExperience.REGULARLY, Pregnancy.NO, null), CATALOG);
+        assertThat(ids(plan, Step.AM_CLEANSER)).first().isEqualTo("bp-cleanser");
+        assertThat(ids(plan, Step.PM_CLEANSER)).doesNotContain("bp-cleanser");
+    }
+
+    @Test
+    void productsWithoutAnOfferAreNeverCandidates() {
+        var noOffer = new RoutineProduct("no-offer", "Brand", "no offer", "cleanser", null, false, Map.of(), null);
+        var plan = RoutineRules.plan(simple(Concern.DULLNESS), List.of(noOffer, GENTLE_CLEANSER));
+        assertThat(ids(plan, Step.AM_CLEANSER)).containsExactly("gentle-cleanser");
     }
 }

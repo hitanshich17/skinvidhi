@@ -46,7 +46,9 @@ public record RoutinePlan(Map<Step, List<RoutineProduct>> candidates, Ingredient
         NO_RETINOIDS_IN_PREGNANCY("Retinoids are left out because they should not be used during pregnancy or "
                 + "while breastfeeding."),
         NO_TREATMENT_FITS("No treatment in our catalog fits all your answers, so your night routine has no "
-                + "treatment step.");
+                + "treatment step."),
+        OVER_BUDGET("Even the lowest-priced routine that fits your answers costs more than your budget. "
+                + "This is that routine.");
 
         private final String text;
 

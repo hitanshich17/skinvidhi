@@ -1,6 +1,7 @@
 package com.skinvidhi.core.routine;
 
 import com.skinvidhi.core.ingredient.IngredientTag;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,7 +10,7 @@ import java.util.Set;
  *
  * @param firstPositions for each tag, the earliest label position of an ingredient with that tag;
  *                       0 means the ingredient is a declared OTC active (adapalene, benzoyl peroxide, UV filters)
- * @param cheapestPriceCents lowest offer price, or null if the product has no offer
+ * @param offer the cheapest offer, or null if the product has no offer (it can't be bought, so it's never picked)
  */
 public record RoutineProduct(
         String id,
@@ -19,7 +20,11 @@ public record RoutineProduct(
         Integer spf,
         boolean imported,
         Map<IngredientTag, Integer> firstPositions,
-        Integer cheapestPriceCents) {
+        Offer offer) {
+
+    /** Where to buy, and for how much. {@code sizeAmount} is in ml or g, or null if unknown. */
+    public record Offer(String retailer, int priceCents, BigDecimal sizeAmount, String sizeUnit, String url) {
+    }
 
     /** Actives below this label position are minor (e.g. vitamin C used as an antioxidant preservative). */
     static final int MAIN_ACTIVE_MAX_POSITION = 10;
@@ -29,6 +34,10 @@ public record RoutineProduct(
 
     public RoutineProduct {
         firstPositions = Map.copyOf(firstPositions);
+    }
+
+    public Integer cheapestPriceCents() {
+        return offer == null ? null : offer.priceCents();
     }
 
     public boolean has(IngredientTag tag) {

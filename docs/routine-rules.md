@@ -63,6 +63,19 @@ The first concern picks the treatment; options are tried in order until one fits
 | Tinted sunscreen with iron oxides preferred for Dark spots, Discoloration, and deeper skin tones (Fitzpatrick IV-VI). | **Moderate**: visible light causes darker, longer-lasting pigmentation in skin of color; iron-oxide tinted sunscreens reduced melasma relapse [14]. |
 | Imported (not FDA-approved) sunscreens are labelled as such and can be hidden with the results filter. | Product rule. |
 
+## 5. Picking one product per step (budget)
+
+These are product rules (the author's decisions), not skin-care evidence.
+
+| Rule | Why |
+|---|---|
+| Products without a price (no offer) are never picked. | They can't be bought. |
+| AM and PM cleanser and moisturizer may differ, but if one product fits both steps as well as any other does, it is used in both. | Fewer products to buy; a product used twice is paid for once. |
+| Each step starts from its best-ranked product. While the total is over budget, the app swaps to a cheaper product further down a step's list, choosing the swap that saves the most money per ranking place given up. A product used in AM and PM is swapped in both. | "Best match within budget": the routine only gets worse where the budget forces it. |
+| If even the cheapest routine is over budget, the app shows it with a note saying so. | The user still gets a safe routine. |
+| Each step shows up to 3 cheaper alternatives, best match first. | Comparing prices is the point of the app. |
+| Any picked product with an AHA as a main active shows the FDA sunburn alert, not only AHA treatments. | Same evidence as section 3 [9]; covers e.g. a glycolic cleanser. |
+
 ## Data gaps to close in step 4c
 
 - ~~SPF is not stored as its own field~~: done (products.spf; the catalog only accepts sunscreens with SPF 30+).
