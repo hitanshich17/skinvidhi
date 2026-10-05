@@ -157,8 +157,8 @@ last column, `import`.
 These offers have a price but no size, and the pages don't state it in a form Claude can read. Fill in the
 `size` and `unit` columns of the existing row in `offers.csv` (units: `ml`, `g`, `fl oz`, `oz`).
 
-- [ ] **Anua Niacinamide 10 + TXA 4 Serum** ($24, brand): size. id `anua-niacinamide-10-txa-4-serum`
-- [ ] **CeraVe PM Facial Moisturizing Lotion** ($19.99, brand): size. The page data hints at 2 fl oz, but
+- [x] **Anua Niacinamide 10 + TXA 4 Serum** ($24, brand): size. id `anua-niacinamide-10-txa-4-serum`
+- [x] **CeraVe PM Facial Moisturizing Lotion** ($19.99, brand): size. The page data hints at 2 fl oz, but
   it's also sold in 3 fl oz; please confirm which size $19.99 is for. id `cerave-pm-facial-moisturizing-lotion`
 - [ ] **Glow Recipe Watermelon Glow Dew Shield SPF 30** ($35, brand): size. id `glow-recipe-watermelon-glow-dew-shield-spf30`
 - [ ] **Paula's Choice 2% BHA Liquid Exfoliant** ($37, brand): size. id `paulas-choice-2-bha-liquid-exfoliant`
