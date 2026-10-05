@@ -74,6 +74,7 @@ These are product rules (the author's decisions), not skin-care evidence.
 | Each step starts from its best-ranked product. While the total is over budget, the app swaps to a cheaper product further down a step's list, choosing the swap that saves the most money per ranking place given up. A product used in AM and PM is swapped in both. | "Best match within budget": the routine only gets worse where the budget forces it. |
 | If even the cheapest routine is over budget, the app shows it with a note saying so. | The user still gets a safe routine. |
 | Each step shows up to 3 cheaper alternatives, best match first. | Comparing prices is the point of the app. |
+| The monthly estimate uses typical amounts per use: cleanser 1 ml, treatment 0.3 ml, moisturizer 0.5 ml, sunscreen 1.2 ml (the "two-finger" amount for the face); twice a day when a product is used AM and PM. Grams count as ml. No estimate is shown if a product's size is unknown. | Author-approved assumptions; the upfront total is what the budget filters on. |
 | Any picked product with an AHA as a main active shows the FDA sunburn alert, not only AHA treatments. | Same evidence as section 3 [9]; covers e.g. a glycolic cleanser. |
 
 ## Data gaps to close in step 4c

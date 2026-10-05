@@ -12,9 +12,10 @@ import java.util.Map;
  * @param picks the chosen product per step; a step with no fitting product (e.g. no treatment) is left out
  * @param totalCents upfront cost; a product used in both AM and PM is counted once
  * @param budgetCents the user's budget, or null for no limit
+ * @param monthlyCents estimated cost per month, or null if a picked product's size is unknown
  */
 public record Routine(Map<Step, Pick> picks, IngredientTag treatmentActive, int totalCents, Integer budgetCents,
-                      List<Note> notes) {
+                      Integer monthlyCents, List<Note> notes) {
 
     public Routine {
         picks = Map.copyOf(picks);

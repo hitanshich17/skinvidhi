@@ -63,7 +63,7 @@ public final class RoutineSelector {
         if (budgetCents != null && total > budgetCents) {
             notes.add(Note.OVER_BUDGET);
         }
-        return new Routine(picks, plan.treatmentActive(), total, budgetCents, notes);
+        return new Routine(picks, plan.treatmentActive(), total, budgetCents, MonthlyCost.estimate(picks), notes);
     }
 
     /** The cheaper choice that gives up the fewest ranking places per dollar saved, or null if none. */

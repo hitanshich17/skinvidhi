@@ -149,5 +149,5 @@ last column, `import`.
 
 ## Reopened
 
-- [ ] **Aestura Derma UV365 Barrier Hydro Mineral Sunscreen**: US price + size. The Amazon link given earlier
+- [x] ~~**Aestura Derma UV365 Barrier Hydro Mineral Sunscreen**~~: dropped, not sold in the US. The Amazon link given earlier
   (B09JDXC8PM) turned out to be SKIN1004 Air-Fit Suncream Plus, so that offer moved there.
