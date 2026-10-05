@@ -32,6 +32,9 @@ class RoutineControllerTest {
     @MockitoBean
     private com.skinvidhi.core.climate.ClimateService climateService;
 
+    @MockitoBean
+    private com.skinvidhi.core.feedback.QuizSessionRepository sessions;
+
     private static RoutineProduct p(String id, String category, Integer spf, int priceCents, Object... tagPositions) {
         Map<com.skinvidhi.core.ingredient.IngredientTag, Integer> positions = new HashMap<>();
         for (int i = 0; i < tagPositions.length; i += 2) {
@@ -124,6 +127,36 @@ class RoutineControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.climate").doesNotExist())
                 .andExpect(jsonPath("$.am", hasSize(3)));
+    }
+
+    @Test
+    void withoutAClientIdNothingIsStored() throws Exception {
+        postAnswers("""
+                {"skinType": "NORMAL", "concerns": ["DULLNESS"], "reactivity": "RARELY",
+                 "activesExperience": "A_LITTLE", "pregnancy": "NO"}
+                """)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sessionId").doesNotExist());
+        org.mockito.Mockito.verifyNoInteractions(sessions);
+    }
+
+    @Test
+    void withAClientIdTheRoutineIsStored() throws Exception {
+        java.util.UUID client = java.util.UUID.randomUUID();
+        when(sessions.save(org.mockito.ArgumentMatchers.eq(client), org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any())).thenReturn(42L);
+
+        mockMvc.perform(post("/api/v1/routines").header("X-Client-Id", client.toString())
+                        .contentType(MediaType.APPLICATION_JSON).content("""
+                        {"skinType": "NORMAL", "concerns": ["DULLNESS"], "reactivity": "RARELY",
+                         "activesExperience": "A_LITTLE", "pregnancy": "NO"}
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sessionId").value(42));
+        org.mockito.Mockito.verify(sessions).save(org.mockito.ArgumentMatchers.eq(client),
+                org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(java.util.Set.of()),
+                org.mockito.ArgumentMatchers.argThat(shown -> !shown.containsKey("PM_TREATMENT")
+                        && "cleanser".equals(shown.get("AM_CLEANSER"))));
     }
 
     @Test

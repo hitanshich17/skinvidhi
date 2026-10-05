@@ -11,10 +11,11 @@ import java.util.List;
  *
  * @param treatmentActive what the night treatment was chosen for (e.g. "RETINOID"), or null if none fits
  * @param climate the city's climate, or null if no city was given or it wasn't found
+ * @param sessionId id of the stored routine (send it with feedback), or null without a client id
  */
 public record RoutineResponse(List<StepPick> am, List<StepPick> pm, IngredientTag treatmentActive,
                               int totalCents, Integer budgetCents, boolean withinBudget, Integer monthlyCents,
-                              CityClimate climate, List<NoteText> notes) {
+                              CityClimate climate, List<NoteText> notes, Long sessionId) {
 
     /**
      * What the routine was adjusted for. The page must credit "Weather data by Open-Meteo.com" (CC BY 4.0).
@@ -46,10 +47,11 @@ public record RoutineResponse(List<StepPick> am, List<StepPick> pm, IngredientTa
     public record NoteText(Note code, String text) {
     }
 
-    static RoutineResponse of(Routine routine, Climate climate) {
+    static RoutineResponse of(Routine routine, Climate climate, Long sessionId) {
         return new RoutineResponse(steps(routine, "AM_"), steps(routine, "PM_"), routine.treatmentActive(),
                 routine.totalCents(), routine.budgetCents(), routine.withinBudget(), routine.monthlyCents(),
-                CityClimate.of(climate), routine.notes().stream().map(n -> new NoteText(n, n.text())).toList());
+                CityClimate.of(climate), routine.notes().stream().map(n -> new NoteText(n, n.text())).toList(),
+                sessionId);
     }
 
     private static List<StepPick> steps(Routine routine, String prefix) {
