@@ -32,7 +32,8 @@ The first concern picks the treatment; options are tried in order until one fits
 
 | Rule | Applies when | Evidence |
 |---|---|---|
-| No retinoids | Pregnant or breastfeeding = Yes | **Strong**, verified: AAD "Retinoids should not be used during pregnancy." [7b]. ACOG lists topical benzoyl peroxide, azelaic acid, topical salicylic acid and glycolic acid as usable OTC in pregnancy (secondary) [12]. |
+| Mineral sunscreen (zinc oxide / titanium dioxide) | Pregnant or breastfeeding = Yes | **Strong**, verified: AAD "Choose a physical sunscreen that contains zinc oxide, titanium dioxide, or both during pregnancy" [16]. |
+| No retinoids | Pregnant or breastfeeding = Yes | **Strong**, verified: AAD "Retinoids should not be used during pregnancy." [7b]; the AAD's pregnancy page names adapalene among retinoids to avoid [16]. ACOG lists topical benzoyl peroxide, azelaic acid, topical salicylic acid and glycolic acid as usable OTC in pregnancy (secondary) [12]. |
 | No fragrance, fragrance allergens, essential oils | Reacts "Often", or concern is Redness or Flaky patches, or the user ticked them | **Strong**, verified for rosacea: AAD lists fragrance among ingredients to avoid [11b]; AAD advises fragrance-free for itchy, dry skin [11]. |
 | No drying alcohol, menthol, camphor, glycolic or lactic acid, SLS, urea | Concern is Redness | **Strong**, verified: AAD rosacea list [11b]. |
 | No drying alcohol, AHA, fragrance in moisturizers | Skin type Dry or concern Dryness | **Strong**: AAD dry-skin advice to avoid alcohol, AHA and fragrance [10]. |
@@ -47,7 +48,10 @@ The first concern picks the treatment; options are tried in order until one fits
 | No leave-on AHA or BHA in the same routine as a retinoid. | **Moderate**: exfoliating while using a retinoid worsens dryness and irritation (AAD guidance as summarized in [7c]); alternating nights is the usual advice. |
 | A benzoyl peroxide or BHA cleanser may be used with a retinoid only if the user answered "Yes, regularly" to question 5 and does not react "Often"; the benzoyl peroxide cleanser then goes in the AM routine. | **Product rule** built on [1]: guideline-recommended combinations, with benzoyl peroxide kept apart from the retinoid to limit irritation. |
 | AHA products require sunscreen in the AM routine and show the FDA sunburn alert. | **Strong**: FDA sunburn alert for AHA cosmetics [9]. |
-| Vitamin C treatments go in the PM routine. | **Product rule**. Evidence does not require night use; most sources suggest morning use with sunscreen. Night use is safe. |
+| Vitamin C treatments go in the PM routine. | **Product rule**. Evidence does not require night use (the AAD's pregnancy advice even suggests mornings [16]); night use is safe and keeps the AM routine to three steps. |
+| Every routine with a vitamin C treatment shows: *"Vitamin C does not protect you from the sun. Use it together with a broad-spectrum SPF 30+ sunscreen every morning."* | **Strong**, verified: "Vitamin C is not a 'sunscreen' because it does not absorb light in the UVA or UVB spectrum." [15] Every routine already has an SPF 30+ sunscreen in the AM. |
+| Vitamin C is allowed in pregnancy. | **Strong**, verified: the AAD's pregnancy skin-care advice recommends a vitamin C product [16]. |
+| For reacts "Often" or Redness, prefer vitamin C derivatives (ascorbyl glucoside, 3-O-ethyl ascorbic acid, tetrahexyldecyl ascorbate) over pure L-ascorbic acid. | **Moderate**: topical vitamin C at 0.6-10% had no reported adverse effects in human studies (verified) [15]; pure L-ascorbic acid needs a low-pH formula that can sting reactive skin, derivatives work at gentler pH (secondary sources) [4]. |
 | Retinoid strength: "Never" = beginner retinoid (e.g. INKEY Starter Retinol, CeraVe Resurfacing); "A little" = any OTC retinol; "Yes, regularly" = includes 1% retinol and adapalene. | **Moderate**: AAD advises starting with a less intense retinoid [7b]. |
 
 ## 4. Sunscreen
@@ -61,8 +65,9 @@ The first concern picks the treatment; options are tried in order until one fits
 
 ## Data gaps to close in step 4c
 
-- **SPF is not stored** as its own field yet (it's only in product names). Needed for the SPF 30+ rule.
-- **Missing tags:** menthol, camphor, sodium lauryl sulfate, urea (rosacea list), iron oxides (tinted sunscreens), hyaluronic acid, peptides, centella.
+- ~~SPF is not stored as its own field~~: done (products.spf; the catalog only accepts sunscreens with SPF 30+).
+- ~~Missing tags~~: done (menthol, camphor, sodium lauryl sulfate, urea, iron oxides, hyaluronic acid, peptides,
+  centella, and pure L-ascorbic acid).
 - **Retinoid strength** is not stored; the catalog has adapalene 0.1% as an active, others only as ingredients.
 - **Not in the catalog:** hydroquinone (no longer sold OTC in the US) and prescription treatments; the app should
   tell users with stubborn discoloration or acne to see a dermatologist.
@@ -85,3 +90,5 @@ The first concern picks the treatment; options are tried in order until one fits
 12. ACOG, Skin Conditions During Pregnancy (secondary; page not readable automatically): https://www.acog.org/womens-health/faqs/skin-conditions-during-pregnancy
 13. AAD, Sunscreen FAQs: https://www.aad.org/media/stats-sunscreen ; How to decode a sunscreen label: https://www.aad.org/public/everyday-care/sun-protection/shade-clothing-sunscreen/understand-sunscreen-labels
 14. Guide to tinted sunscreens for skin of color, *J Am Acad Dermatol* 2023: https://www.jaad.org/article/S0190-9622(23)02045-5/fulltext
+15. Linus Pauling Institute, Oregon State University, Vitamin C and Skin Health (verified): https://lpi.oregonstate.edu/mic/health-disease/skin-health/vitamin-C
+16. AAD, Dermatologist-approved pregnancy skin care (verified): https://www.aad.org/public/everyday-care/skin-care-secrets/routine/pregnancy-skin-care

@@ -59,6 +59,12 @@ public enum IngredientTag {
 
     VITAMIN_C("\\b(ascorbic acid|ascorbyl|ascorbate)\\b"),
 
+    /**
+     * Pure L-ascorbic acid (also tagged VITAMIN_C). It needs a low-pH formula that can sting reactive skin;
+     * derivatives such as ascorbyl glucoside are gentler.
+     */
+    L_ASCORBIC_ACID("^(l-)?ascorbic acid$"),
+
     BENZOYL_PEROXIDE("\\bbenzoyl peroxide\\b"),
 
     NIACINAMIDE("^(niacinamide|nicotinamide)$"),

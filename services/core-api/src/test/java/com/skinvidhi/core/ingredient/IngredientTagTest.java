@@ -73,6 +73,8 @@ class IngredientTagTest {
         assertThat(tags("Betaine Salicylate")).containsExactly(BHA);
         assertThat(tags("Butyloctyl Salicylate")).isEmpty(); // an emollient, not an exfoliant
         assertThat(tags("3-O-Ethyl Ascorbic Acid")).containsExactly(VITAMIN_C);
+        assertThat(tags("Ascorbic Acid")).containsExactly(VITAMIN_C, L_ASCORBIC_ACID);
+        assertThat(tags("Ascorbyl Glucoside")).containsExactly(VITAMIN_C);
         assertThat(tags("Tetrahexyldecyl Ascorbate")).containsExactly(VITAMIN_C);
         assertThat(tags("Benzoyl Peroxide")).containsExactly(BENZOYL_PEROXIDE);
         assertThat(tags("Niacinamide")).containsExactly(NIACINAMIDE);
