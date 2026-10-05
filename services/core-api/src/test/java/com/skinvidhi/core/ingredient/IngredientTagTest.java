@@ -114,6 +114,16 @@ class IngredientTagTest {
     }
 
     @Test
+    void chemicalUvFiltersButNotMinerals() {
+        assertThat(tags("Avobenzone")).containsExactly(CHEMICAL_UV_FILTER);
+        assertThat(tags("Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine")).containsExactly(CHEMICAL_UV_FILTER);
+        assertThat(tags("Ethylhexyl Methoxycinnamate")).containsExactly(CHEMICAL_UV_FILTER);
+        assertThat(tags("Zinc Oxide")).isEmpty();
+        assertThat(tags("Titanium Dioxide")).isEmpty();
+        assertThat(tags("Butyloctyl Salicylate")).isEmpty(); // an emollient often used in sunscreens
+    }
+
+    @Test
     void anyNameOfTheIngredientCounts() {
         assertThat(tags("Aqua", "water")).isEmpty();
         assertThat(tags("Parfum", "fragrance", "perfume")).containsExactly(FRAGRANCE);

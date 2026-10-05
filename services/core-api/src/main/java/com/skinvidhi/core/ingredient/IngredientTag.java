@@ -91,7 +91,15 @@ public enum IngredientTag {
 
     PEPTIDE("\\b([a-z]*peptide-?[0-9]*|oligopeptide|polypeptide)\\b"),
 
-    CENTELLA("\\b(centella asiatica|madecassoside|madecassic acid|asiaticoside|asiatic acid)\\b");
+    CENTELLA("\\b(centella asiatica|madecassoside|madecassic acid|asiaticoside|asiatic acid)\\b"),
+
+    /** Organic ("chemical") UV filters, US and international names. Sunscreens without any are mineral. */
+    CHEMICAL_UV_FILTER("\\b(avobenzone|butyl methoxydibenzoylmethane|homosalate|octisalate|ethylhexyl salicylate"
+            + "|octocrylene|octinoxate|ethylhexyl methoxycinnamate|oxybenzone|benzophenone-3|ensulizole"
+            + "|phenylbenzimidazole sulfonic acid|bis-ethylhexyloxyphenol methoxyphenyl triazine"
+            + "|methylene bis-benzotriazolyl tetramethylbutylphenol|diethylamino hydroxybenzoyl hexyl benzoate"
+            + "|ethylhexyl triazone|diethylhexyl butamido triazone|isoamyl p-methoxycinnamate|polysilicone-15"
+            + "|drometrizole trisiloxane|terephthalylidene dicamphor sulfonic acid)\\b");
 
     private final Pattern pattern;
 
