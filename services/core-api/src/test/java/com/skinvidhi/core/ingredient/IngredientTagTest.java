@@ -82,6 +82,36 @@ class IngredientTagTest {
     }
 
     @Test
+    void rosaceaIrritants() {
+        assertThat(tags("Menthol")).containsExactly(MENTHOL);
+        assertThat(tags("MENTHOXYPROPANEDIOL")).containsExactly(MENTHOL);
+        assertThat(tags("Camphor")).containsExactly(CAMPHOR);
+        assertThat(tags("Sodium Lauryl Sulfate")).containsExactly(SODIUM_LAURYL_SULFATE);
+        assertThat(tags("Sodium Laureth Sulfate")).isEmpty(); // milder, not on the AAD list
+        assertThat(tags("Urea")).containsExactly(UREA);
+        assertThat(tags("Hydroxyethyl Urea")).isEmpty(); // a different, non-irritating humectant
+    }
+
+    @Test
+    void ironOxidesInTintedSunscreens() {
+        assertThat(tags("Iron Oxides (CI 77492)")).contains(IRON_OXIDE);
+        assertThat(tags("CI 77491")).containsExactly(IRON_OXIDE);
+        assertThat(tags("iron oxides")).containsExactly(IRON_OXIDE);
+        assertThat(tags("CI 77891")).isEmpty(); // titanium dioxide
+    }
+
+    @Test
+    void hydrationAndSoothingIngredients() {
+        assertThat(tags("Sodium Hyaluronate")).containsExactly(HYALURONIC_ACID);
+        assertThat(tags("Hydrolyzed Hyaluronic Acid")).containsExactly(HYALURONIC_ACID);
+        assertThat(tags("Palmitoyl Tripeptide-1")).containsExactly(PEPTIDE);
+        assertThat(tags("Acetyl Hexapeptide-8")).containsExactly(PEPTIDE);
+        assertThat(tags("sh-Oligopeptide-1")).containsExactly(PEPTIDE);
+        assertThat(tags("Centella Asiatica Extract")).containsExactly(CENTELLA);
+        assertThat(tags("Madecassoside")).containsExactly(CENTELLA);
+    }
+
+    @Test
     void anyNameOfTheIngredientCounts() {
         assertThat(tags("Aqua", "water")).isEmpty();
         assertThat(tags("Parfum", "fragrance", "perfume")).containsExactly(FRAGRANCE);

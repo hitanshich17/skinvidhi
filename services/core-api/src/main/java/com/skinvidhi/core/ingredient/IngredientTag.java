@@ -67,7 +67,25 @@ public enum IngredientTag {
 
     AZELAIC_ACID("\\bazelaic acid\\b"),
 
-    CERAMIDE("\\bceramide\\b");
+    CERAMIDE("\\bceramide\\b"),
+
+    /** Rosacea irritants named by the AAD (with drying alcohol, fragrance and glycolic/lactic acid). */
+    MENTHOL("\\b(menthol|menthyl [a-z]+|menthoxypropanediol)\\b"),
+
+    CAMPHOR("\\bcamphor\\b"),
+
+    SODIUM_LAURYL_SULFATE("^(sodium lauryl sulfate|sls)$"),
+
+    UREA("^urea$"),
+
+    /** Pigments in tinted sunscreens; they block visible light, which matters for discoloration. */
+    IRON_OXIDE("\\biron oxides?\\b|^ci ?7749[129]$"),
+
+    HYALURONIC_ACID("\\bhyaluron(ic acid|ate)\\b"),
+
+    PEPTIDE("\\b([a-z]*peptide-?[0-9]*|oligopeptide|polypeptide)\\b"),
+
+    CENTELLA("\\b(centella asiatica|madecassoside|madecassic acid|asiaticoside|asiatic acid)\\b");
 
     private final Pattern pattern;
 
