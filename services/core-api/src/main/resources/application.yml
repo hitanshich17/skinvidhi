@@ -34,3 +34,10 @@ skinvidhi:
     base-url: ${AI_SERVICE_URL:http://localhost:8000}
     connect-timeout: 2s
     read-timeout: 5s
+  open-meteo:
+    geocoding-url: https://geocoding-api.open-meteo.com/v1/search
+    forecast-url: https://api.open-meteo.com/v1/forecast
+    air-quality-url: https://air-quality-api.open-meteo.com/v1/air-quality
+    connect-timeout: 2s
+    read-timeout: 5s
+    cache-for: 24h
