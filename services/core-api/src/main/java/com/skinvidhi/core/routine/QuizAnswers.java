@@ -30,13 +30,30 @@ public record QuizAnswers(
     public enum Pregnancy { YES, NO, PREFER_NOT_TO_SAY }
 
     public QuizAnswers {
+        required(skinType, "skinType");
+        required(concerns, "concerns");
+        required(reactivity, "reactivity");
+        required(activesExperience, "activesExperience");
+        required(pregnancy, "pregnancy");
         concerns = List.copyOf(concerns);
-        avoid = Set.copyOf(avoid);
+        avoid = avoid == null ? Set.of() : Set.copyOf(avoid); // an empty avoid list may be left out
+        if (concerns.size() != Set.copyOf(concerns).size()) {
+            throw new IllegalArgumentException("concerns must be different");
+        }
         if (concerns.isEmpty() || concerns.size() > 2) {
             throw new IllegalArgumentException("pick 1 or 2 concerns");
         }
         if (skinTone != null && (skinTone < 1 || skinTone > 6)) {
             throw new IllegalArgumentException("skin tone is 1 to 6");
+        }
+        if (budgetCents != null && budgetCents <= 0) {
+            throw new IllegalArgumentException("budget must be positive (leave it out for no limit)");
+        }
+    }
+
+    private static void required(Object value, String name) {
+        if (value == null) {
+            throw new IllegalArgumentException(name + " is required");
         }
     }
 
