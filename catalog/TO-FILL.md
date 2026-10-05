@@ -151,3 +151,17 @@ last column, `import`.
 
 - [x] ~~**Aestura Derma UV365 Barrier Hydro Mineral Sunscreen**~~: dropped, not sold in the US. The Amazon link given earlier
   (B09JDXC8PM) turned out to be SKIN1004 Air-Fit Suncream Plus, so that offer moved there.
+
+## Sizes (for the monthly cost estimate)
+
+These offers have a price but no size, and the pages don't state it in a form Claude can read. Fill in the
+`size` and `unit` columns of the existing row in `offers.csv` (units: `ml`, `g`, `fl oz`, `oz`).
+
+- [ ] **Anua Niacinamide 10 + TXA 4 Serum** ($24, brand): size. id `anua-niacinamide-10-txa-4-serum`
+- [ ] **CeraVe PM Facial Moisturizing Lotion** ($19.99, brand): size. The page data hints at 2 fl oz, but
+  it's also sold in 3 fl oz; please confirm which size $19.99 is for. id `cerave-pm-facial-moisturizing-lotion`
+- [ ] **Glow Recipe Watermelon Glow Dew Shield SPF 30** ($35, brand): size. id `glow-recipe-watermelon-glow-dew-shield-spf30`
+- [ ] **Paula's Choice 2% BHA Liquid Exfoliant** ($37, brand): size. id `paulas-choice-2-bha-liquid-exfoliant`
+- [ ] **Vanicream Daily Facial Moisturizer** ($13.97, Walmart): size. id `vanicream-daily-facial-moisturizer`
+- [ ] **Drunk Elephant Umbra Sheer Mineral Cream SPF 30** ($42, brand): size. id `drunk-elephant-umbra-sheer-spf30`
+- [ ] **SKIN1004 Centella Air-Fit Suncream Plus** ($11.26, YesStyle): size. id `skin1004-centella-air-fit-suncream-plus`
