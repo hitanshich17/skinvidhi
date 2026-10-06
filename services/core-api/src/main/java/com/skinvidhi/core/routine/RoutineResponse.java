@@ -1,6 +1,7 @@
 package com.skinvidhi.core.routine;
 
 import com.skinvidhi.core.climate.Climate;
+import com.skinvidhi.core.explanation.ExplanationService.Explanation;
 import com.skinvidhi.core.ingredient.IngredientTag;
 import com.skinvidhi.core.routine.RoutinePlan.Note;
 import com.skinvidhi.core.routine.RoutinePlan.Step;
@@ -13,10 +14,12 @@ import java.util.List;
  * @param climate the city's climate, or null if no city was given or it wasn't found
  * @param sessionId id of the stored routine (send it with feedback), or null without a client id
  * @param avoidedForYou what is left out because of past reactions, in words (e.g. "Fragrance")
+ * @param explanation "why this routine": source AI (LLM, checked) or TEMPLATE (fixed sentences)
  */
 public record RoutineResponse(List<StepPick> am, List<StepPick> pm, IngredientTag treatmentActive,
                               int totalCents, Integer budgetCents, boolean withinBudget, Integer monthlyCents,
-                              CityClimate climate, List<NoteText> notes, Long sessionId, List<String> avoidedForYou) {
+                              CityClimate climate, List<NoteText> notes, Long sessionId, List<String> avoidedForYou,
+                              Explanation explanation) {
 
     /**
      * What the routine was adjusted for. The page must credit "Weather data by Open-Meteo.com" (CC BY 4.0).
@@ -51,11 +54,11 @@ public record RoutineResponse(List<StepPick> am, List<StepPick> pm, IngredientTa
     public record NoteText(Note code, String text) {
     }
 
-    static RoutineResponse of(Routine routine, Climate climate, Long sessionId) {
+    static RoutineResponse of(Routine routine, Climate climate, Long sessionId, Explanation explanation) {
         return new RoutineResponse(steps(routine, "AM_"), steps(routine, "PM_"), routine.treatmentActive(),
                 routine.totalCents(), routine.budgetCents(), routine.withinBudget(), routine.monthlyCents(),
                 CityClimate.of(climate), routine.notes().stream().map(n -> new NoteText(n, n.text())).toList(),
-                sessionId, routine.avoided());
+                sessionId, routine.avoided(), explanation);
     }
 
     private static List<StepPick> steps(Routine routine, String prefix) {

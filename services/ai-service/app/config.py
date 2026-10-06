@@ -10,6 +10,10 @@ class Settings(BaseSettings):
 
     app_env: str = "local"
     llm_api_key: str = ""
+    # Claude Haiku 4.5: cheap and fast, good at following the explanation rules.
+    llm_model: str = "claude-haiku-4-5-20251001"
+    # Kept below core-api's read timeout, so core-api gets an answer (or an error) before it gives up.
+    llm_timeout_seconds: float = 4.0
 
     @property
     def llm_configured(self) -> bool:

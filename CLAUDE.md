@@ -45,6 +45,9 @@ AHAs, irritants, sensitivities). AI/ML is used where it solves a real problem:
   (irritated [default], didn't work, texture/smell, too pricey) picks the replacement. Suspects = tagged
   irritants + main actives, plus ingredients shared by 2+ dislikes and no like. pgvector similarity to
   liked products only breaks ties.
+- Explanations (step 6a): Claude Haiku 4.5 via the AI service explains the rules' decisions from facts only
+  (no pregnancy answer, no city); answers are checked (length, no medical claims, no links) and cached in Redis.
+  Whenever there is no valid LLM answer within ~4s, core-api shows a template explanation.
 - Sizes: fl oz -> ml, oz -> g; liquids sold in "oz" count as fl oz; creams, balms and sticks keep oz.
 - OTC active ingredients (acne treatments, sunscreens) are stored separately with their percentage.
 - Curated catalog: ~25 products per category; the author approves each list. Claude reads ingredients

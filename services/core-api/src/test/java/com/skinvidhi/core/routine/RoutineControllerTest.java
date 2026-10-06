@@ -41,6 +41,9 @@ class RoutineControllerTest {
     @MockitoBean
     private com.skinvidhi.core.similarity.SimilarityRepository similarity;
 
+    @MockitoBean
+    private com.skinvidhi.core.explanation.ExplanationService explanations;
+
     private static RoutineProduct p(String id, String category, Integer spf, int priceCents, Object... tagPositions) {
         Map<com.skinvidhi.core.ingredient.IngredientTag, Integer> positions = new HashMap<>();
         for (int i = 0; i < tagPositions.length; i += 2) {
@@ -80,6 +83,23 @@ class RoutineControllerTest {
                 .andExpect(jsonPath("$.totalCents").value(1000 + 1200 + 900 + 1600))
                 .andExpect(jsonPath("$.withinBudget").value(true))
                 .andExpect(jsonPath("$.monthlyCents").isNumber());
+    }
+
+    @Test
+    void explanationIsIncluded() throws Exception {
+        when(explanations.explain(org.mockito.ArgumentMatchers.any())).thenReturn(
+                new com.skinvidhi.core.explanation.ExplanationService.Explanation("Because...",
+                        com.skinvidhi.core.explanation.ExplanationService.Source.TEMPLATE));
+
+        postAnswers("""
+                {"skinType": "NORMAL", "concerns": ["REDNESS"], "reactivity": "RARELY",
+                 "activesExperience": "A_LITTLE", "pregnancy": "YES"}
+                """)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.explanation.text").value("Because..."))
+                .andExpect(jsonPath("$.explanation.source").value("TEMPLATE"));
+        org.mockito.Mockito.verify(explanations).explain(org.mockito.ArgumentMatchers.argThat(facts ->
+                facts.notes().stream().noneMatch(n -> n.toLowerCase().contains("pregnan"))));
     }
 
     @Test

@@ -2,6 +2,8 @@ package com.skinvidhi.core.routine;
 
 import com.skinvidhi.core.climate.Climate;
 import com.skinvidhi.core.climate.ClimateService;
+import com.skinvidhi.core.explanation.ExplanationFacts;
+import com.skinvidhi.core.explanation.ExplanationService;
 import com.skinvidhi.core.feedback.FeedbackRepository;
 import com.skinvidhi.core.feedback.QuizSessionRepository;
 import com.skinvidhi.core.similarity.SimilarityRepository;
@@ -32,14 +34,17 @@ public class RoutineController {
     private final QuizSessionRepository sessions;
     private final FeedbackRepository feedback;
     private final SimilarityRepository similarity;
+    private final ExplanationService explanations;
 
     public RoutineController(RoutineCatalog catalog, ClimateService climateService, QuizSessionRepository sessions,
-                             FeedbackRepository feedback, SimilarityRepository similarity) {
+                             FeedbackRepository feedback, SimilarityRepository similarity,
+                             ExplanationService explanations) {
         this.catalog = catalog;
         this.climateService = climateService;
         this.sessions = sessions;
         this.feedback = feedback;
         this.similarity = similarity;
+        this.explanations = explanations;
     }
 
     @PostMapping
@@ -59,7 +64,8 @@ public class RoutineController {
             routine.picks().forEach((step, pick) -> shown.put(step.name(), pick.product().id()));
             sessionId = sessions.save(clientId, answers, climate == null ? Set.of() : climate.signals(), shown);
         }
-        return RoutineResponse.of(routine, climate, sessionId);
+        var explanation = explanations.explain(ExplanationFacts.of(answers, routine, climate));
+        return RoutineResponse.of(routine, climate, sessionId, explanation);
     }
 
     /** Unreadable JSON, an unknown answer, or a rule in QuizAnswers broken: 400 with the reason. */
