@@ -54,10 +54,17 @@ left; reasons and likes then only reorder or narrow each step's ranked list.
 
 ## Similarity (pgvector)
 
-- Each product gets a vector of its ingredients, weighted by position (earlier = higher concentration).
-  Stored with pgvector as a sparse vector keyed by ingredient ID, compared by cosine distance.
-- Use: among products the rules rank equally, prefer ones similar to the client's liked products and
-  dissimilar to the disliked ones. Rules and safety always come first; similarity only breaks ties.
+- Each product gets a vector of its ingredients (TF-IDF style): weight = `1 / sqrt(position)` x
+  `ln(N / products containing it)`. Earlier = higher concentration; rarity means water and glycerin (in nearly
+  everything) weigh ~0, so products look alike only when they share distinctive ingredients. Declared OTC actives
+  count as position 1. Stored with pgvector as a `sparsevec` keyed by ingredient ID (migration V10), rebuilt after
+  every catalog import.
+- Score per product: cosine similarity to the closest liked product minus cosine similarity to the closest disliked
+  one, computed in SQL by pgvector.
+- Use (author's decision): rules first, then similarity, then price. Similarity is rounded to 0.1, so tiny
+  differences count as a tie and price decides. Safety rules and fit (skin type, concerns) are never overridden.
+- Checked on the real catalog: liking COSRX's snail essence ranks COSRX's snail cream first (0.87, everything
+  else < 0.1); liking CeraVe's cleanser ranks the CeraVe moisturizers first (shared ceramide blend).
 - Why pgvector rather than Java: the same search must later scale to the Open Beauty Facts import (thousands of
   products) and to AI embeddings in step 6, and nearest-neighbour search belongs in the database.
 

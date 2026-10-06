@@ -228,4 +228,32 @@ class RoutineFeedbackTest {
         assertThat(plan.candidates().get(Step.AM_SUNSCREEN)).isEmpty();
         assertThat(plan.notes()).contains(Note.NO_PRODUCT_FITS_STEP);
     }
+
+    // ---- Similarity to liked products (pgvector scores) ----
+
+    private static TriedProducts similarity(Map<String, Double> scores) {
+        return new TriedProducts(Set.of(), Map.of(), scores);
+    }
+
+    @Test
+    void similarityComesBeforePrice() {
+        // Equal fit for normal skin; the gel is pricier but much like something the client liked.
+        var plan = plan(CATALOG, similarity(Map.of("water-gel", 0.8, "rich-cream", 0.1)));
+        assertThat(ids(plan, Step.AM_MOISTURIZER)).first().isEqualTo("water-gel");
+    }
+
+    @Test
+    void tinySimilarityDifferencesAreATieAndPriceDecides() {
+        var plan = plan(CATALOG, similarity(Map.of("water-gel", 0.42, "rich-cream", 0.41, "fragrant-cream", 0.38)));
+        assertThat(ids(plan, Step.AM_MOISTURIZER)).first().isEqualTo("fragrant-cream"); // all round to 0.4
+    }
+
+    @Test
+    void similarityNeverBeatsTheRules() {
+        // Oily skin wants light textures: a rich cream stays behind the gel however similar it is.
+        var oily = new QuizAnswers(SkinType.OILY, List.of(Concern.OILINESS), Reactivity.RARELY, Set.of(),
+                ActivesExperience.A_LITTLE, Pregnancy.NO, null, null, null);
+        var plan = RoutineRules.plan(oily, CATALOG, null, similarity(Map.of("rich-cream", 0.9)));
+        assertThat(ids(plan, Step.AM_MOISTURIZER)).first().isEqualTo("water-gel");
+    }
 }

@@ -83,8 +83,8 @@ products with manually maintained prices. Product links are plain links.
 2. Ingredient pipeline: Open Beauty Facts import, ingredient normalization (done)
 3. US product catalog: curated products, prices, categories (done: 103 products, 139 offers)
 4. Quiz + routine rules engine: step templates, clash rules, budget fit, climate from city (done)
-5. Replacements and feedback: "tried it? liked/disliked", pgvector similarity  <- NEXT
-6. AI: label reading, explanations; ranking model from feedback + evaluation set
+5. Replacements and feedback: "tried it? liked/disliked", pgvector similarity (done)
+6. AI: label reading, explanations; ranking model from feedback + evaluation set  <- NEXT
 7. Frontend (Next.js), AWS deployment
 8. Community home remedies
 

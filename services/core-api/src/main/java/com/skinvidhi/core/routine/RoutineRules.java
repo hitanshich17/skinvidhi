@@ -97,7 +97,7 @@ public final class RoutineRules {
                     .toList();
             if (!matching.isEmpty()) {
                 byActive.put(active, adjust(catalog, "treatment",
-                        rank(matching, secondConcernCoverage().thenComparing(byPrice()))));
+                        rank(matching, secondConcernCoverage().thenComparing(similarityThenPrice()))));
             }
         }
         IngredientTag treatmentActive = byActive.isEmpty() ? null : byActive.keySet().iterator().next();
@@ -107,13 +107,13 @@ public final class RoutineRules {
 
         Map<Step, List<RoutineProduct>> candidates = new EnumMap<>(Step.class);
         candidates.put(Step.PM_TREATMENT, treatments);
-        candidates.put(Step.AM_CLEANSER, rank(cleansers(allowed, retinoidNight, true), cleanserFit().thenComparing(byPrice())));
-        candidates.put(Step.PM_CLEANSER, rank(cleansers(allowed, retinoidNight, false), cleanserFit().thenComparing(byPrice())));
-        preferRepeat(candidates, Step.AM_CLEANSER, Step.PM_CLEANSER, cleanserFit());
+        candidates.put(Step.AM_CLEANSER, rank(cleansers(allowed, retinoidNight, true), cleanserFit().thenComparing(similarityThenPrice())));
+        candidates.put(Step.PM_CLEANSER, rank(cleansers(allowed, retinoidNight, false), cleanserFit().thenComparing(similarityThenPrice())));
+        preferRepeat(candidates, Step.AM_CLEANSER, Step.PM_CLEANSER, cleanserFit().thenComparing(bySimilarity()));
         List<RoutineProduct> moisturizers = moisturizers(allowed, retinoidNight);
-        candidates.put(Step.AM_MOISTURIZER, rank(moisturizers, moisturizerFit().thenComparing(byPrice())));
-        candidates.put(Step.PM_MOISTURIZER, rank(moisturizers, moisturizerFit().thenComparing(byPrice())));
-        preferRepeat(candidates, Step.AM_MOISTURIZER, Step.PM_MOISTURIZER, moisturizerFit());
+        candidates.put(Step.AM_MOISTURIZER, rank(moisturizers, moisturizerFit().thenComparing(similarityThenPrice())));
+        candidates.put(Step.PM_MOISTURIZER, rank(moisturizers, moisturizerFit().thenComparing(similarityThenPrice())));
+        preferRepeat(candidates, Step.AM_MOISTURIZER, Step.PM_MOISTURIZER, moisturizerFit().thenComparing(bySimilarity()));
         candidates.put(Step.AM_SUNSCREEN, sunscreens(allowed, retinoidNight));
         // Feedback comes after the repeat preference, so a repeat can't bring back a disliked texture.
         candidates.replaceAll((step, list) -> step == Step.PM_TREATMENT ? list : adjust(catalog, step.category(), list));
@@ -363,7 +363,7 @@ public final class RoutineRules {
         Comparator<RoutineProduct> tintFirst = Comparator.comparing(p -> !(tintPreferred && p.tinted()));
         boolean highUv = climateHas(Signal.HIGH_UV);
         Comparator<RoutineProduct> highSpfFirst = Comparator.comparing(p -> highUv && p.spf() < HIGH_UV_MIN_SPF);
-        return rank(sunscreens, highSpfFirst.thenComparing(tintFirst).thenComparing(byPrice()));
+        return rank(sunscreens, highSpfFirst.thenComparing(tintFirst).thenComparing(similarityThenPrice()));
     }
 
     // ---- Helpers ----
@@ -385,6 +385,16 @@ public final class RoutineRules {
 
     private boolean climateHas(Signal signal) {
         return climate != null && climate.has(signal);
+    }
+
+    /** More like what the client liked (and less like what they disliked) first; 0 for everyone without feedback. */
+    private Comparator<RoutineProduct> bySimilarity() {
+        return Comparator.comparingDouble(p -> -tried.similarityTo(p));
+    }
+
+    /** After the rules: similarity to liked products, then price (author's decision). */
+    private Comparator<RoutineProduct> similarityThenPrice() {
+        return bySimilarity().thenComparing(byPrice());
     }
 
     private static Comparator<RoutineProduct> byPrice() {

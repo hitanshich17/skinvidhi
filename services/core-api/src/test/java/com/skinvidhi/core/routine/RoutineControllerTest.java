@@ -38,6 +38,9 @@ class RoutineControllerTest {
     @MockitoBean
     private com.skinvidhi.core.feedback.FeedbackRepository feedback;
 
+    @MockitoBean
+    private com.skinvidhi.core.similarity.SimilarityRepository similarity;
+
     private static RoutineProduct p(String id, String category, Integer spf, int priceCents, Object... tagPositions) {
         Map<com.skinvidhi.core.ingredient.IngredientTag, Integer> positions = new HashMap<>();
         for (int i = 0; i < tagPositions.length; i += 2) {

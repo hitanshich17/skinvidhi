@@ -4,6 +4,7 @@ import com.skinvidhi.core.climate.Climate;
 import com.skinvidhi.core.climate.ClimateService;
 import com.skinvidhi.core.feedback.FeedbackRepository;
 import com.skinvidhi.core.feedback.QuizSessionRepository;
+import com.skinvidhi.core.similarity.SimilarityRepository;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -30,20 +31,26 @@ public class RoutineController {
     private final ClimateService climateService;
     private final QuizSessionRepository sessions;
     private final FeedbackRepository feedback;
+    private final SimilarityRepository similarity;
 
     public RoutineController(RoutineCatalog catalog, ClimateService climateService, QuizSessionRepository sessions,
-                             FeedbackRepository feedback) {
+                             FeedbackRepository feedback, SimilarityRepository similarity) {
         this.catalog = catalog;
         this.climateService = climateService;
         this.sessions = sessions;
         this.feedback = feedback;
+        this.similarity = similarity;
     }
 
     @PostMapping
     public RoutineResponse build(@RequestHeader(value = "X-Client-Id", required = false) UUID clientId,
                                  @RequestBody QuizAnswers answers) {
         Climate climate = climateService.climateFor(answers.city()).orElse(null);
-        TriedProducts tried = clientId == null ? TriedProducts.NONE : TriedProducts.from(feedback.findAll(clientId));
+        TriedProducts tried = TriedProducts.NONE;
+        if (clientId != null) {
+            var verdicts = feedback.findAll(clientId);
+            tried = verdicts.isEmpty() ? TriedProducts.NONE : TriedProducts.from(verdicts, similarity.scores(clientId));
+        }
         RoutinePlan plan = RoutineRules.plan(answers, catalog.load(), climate, tried);
         Routine routine = RoutineSelector.select(plan, answers.budgetCents());
         Long sessionId = null;
