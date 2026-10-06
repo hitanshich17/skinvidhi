@@ -165,3 +165,16 @@ These offers have a price but no size, and the pages don't state it in a form Cl
 - [x] **Vanicream Daily Facial Moisturizer** ($13.97, Walmart): size. id `vanicream-daily-facial-moisturizer`
 - [x] **Drunk Elephant Umbra Sheer Mineral Cream SPF 30** ($42, brand): size. id `drunk-elephant-umbra-sheer-spf30`
 - [x] **SKIN1004 Centella Air-Fit Suncream Plus** ($16.20 now, YesStyle): size. id `skin1004-centella-air-fit-suncream-plus`
+
+## AHA treatments (added 2026-10-06)
+
+Dullness's first-choice treatment is an AHA, and the catalog had none. The Ordinary Lactic Acid 10% + HA was read
+from its brand page. These two need you:
+
+- [ ] **Paula's Choice Skin Perfecting 8% AHA Gel Exfoliant**: ingredient list, price + size (the brand page loads
+  its ingredient list in a way Claude can't read). Page: https://www.paulaschoice.com/skin-perfecting-8pct-aha-gel-exfoliant/190.html
+  id: `paulas-choice-8-aha-gel-exfoliant`
+- [ ] **COSRX AHA 7 Whitehead Power Liquid**: ingredient list, and where it's sold in the US. COSRX's US store lists
+  it at $22 / 100 ml but its product page is not published (404), so it may no longer be sold there.
+  id: `cosrx-aha-7-whitehead-power-liquid`
+
