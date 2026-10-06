@@ -18,7 +18,7 @@ Locally, everything runs in Docker. In production it runs on a single EC2 instan
 
 ## Run it locally
 
-Requirements: Docker Desktop.
+Requirements: Docker (Docker Desktop, or [Colima](https://github.com/abiosoft/colima) on macOS: `brew install colima docker docker-compose && colima start`).
 
 ```bash
 cp .env.example .env
@@ -34,8 +34,13 @@ Then check:
 ## Run tests
 
 ```bash
-# Java (needs JDK 21 + Maven)
-cd services/core-api && mvn verify
+# Java (needs JDK 21). Database tests start PostgreSQL in Docker with Testcontainers
+# and are skipped when Docker isn't running.
+cd services/core-api && ./mvnw verify
+
+# With Colima, tell Testcontainers where Docker is:
+DOCKER_HOST=unix://$HOME/.colima/default/docker.sock \
+TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock ./mvnw verify
 
 # Python
 cd services/ai-service
