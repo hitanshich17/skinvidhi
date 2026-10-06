@@ -112,4 +112,56 @@ class RoutineSelectorTest {
 
         assertThat(routine.notes()).containsExactly(Note.AHA_SUNBURN_ALERT);
     }
+
+    // ---- Last resort: the concern's next treatment active ----
+
+    static final RoutineProduct PRICEY_BHA = p("pricey-bha", "treatment", 3700, BHA, 2);
+    static final RoutineProduct VITAMIN_C_SERUM = p("vitamin-c-serum", "treatment", 2000, VITAMIN_C, 3);
+    static final RoutineProduct AZELAIC_CREAM = p("azelaic-cream", "treatment", 1000, AZELAIC_ACID, 3);
+
+    private static RoutinePlan dullnessPlan(java.util.LinkedHashMap<IngredientTag, List<RoutineProduct>> fallbacks) {
+        Map<Step, List<RoutineProduct>> candidates = new EnumMap<>(plan().candidates());
+        candidates.put(Step.PM_TREATMENT, List.of(PRICEY_BHA));
+        return new RoutinePlan(candidates, BHA, List.of(), fallbacks);
+    }
+
+    private static java.util.LinkedHashMap<IngredientTag, List<RoutineProduct>> fallbacks() {
+        var fallbacks = new java.util.LinkedHashMap<IngredientTag, List<RoutineProduct>>();
+        fallbacks.put(VITAMIN_C, List.of(VITAMIN_C_SERUM));
+        fallbacks.put(AZELAIC_ACID, List.of(AZELAIC_CREAM));
+        return fallbacks;
+    }
+
+    @Test
+    void treatmentKeepsItsActiveWhenTheBudgetFits() {
+        Routine routine = RoutineSelector.select(dullnessPlan(fallbacks()), 7000); // 500 + 3700 + 1000 + 1000 = 6200
+
+        assertThat(routine.treatmentActive()).isEqualTo(BHA);
+        assertThat(routine.notes()).doesNotContain(Note.TREATMENT_CHANGED_FOR_BUDGET);
+    }
+
+    @Test
+    void overBudgetSwitchesToTheNextActiveThatFits() {
+        Routine routine = RoutineSelector.select(dullnessPlan(fallbacks()), 5000); // vitamin C: 500 + 2000 + 2000 = 4500
+
+        assertThat(routine.treatmentActive()).isEqualTo(VITAMIN_C);
+        assertThat(pick(routine, Step.PM_TREATMENT)).isEqualTo("vitamin-c-serum");
+        assertThat(routine.notes()).contains(Note.TREATMENT_CHANGED_FOR_BUDGET, Note.VITAMIN_C_NEEDS_SUNSCREEN)
+                .doesNotContain(Note.OVER_BUDGET);
+    }
+
+    @Test
+    void preferenceOrderWinsOverPrice() {
+        // Vitamin C fits, so the cheaper azelaic acid (later in the concern's list) isn't used.
+        assertThat(RoutineSelector.select(dullnessPlan(fallbacks()), 4600).treatmentActive()).isEqualTo(VITAMIN_C);
+        assertThat(RoutineSelector.select(dullnessPlan(fallbacks()), 3500).treatmentActive()).isEqualTo(AZELAIC_ACID);
+    }
+
+    @Test
+    void whenNothingFitsTheBestActiveStays() {
+        Routine routine = RoutineSelector.select(dullnessPlan(fallbacks()), 1000);
+
+        assertThat(routine.treatmentActive()).isEqualTo(BHA);
+        assertThat(routine.notes()).contains(Note.OVER_BUDGET).doesNotContain(Note.TREATMENT_CHANGED_FOR_BUDGET);
+    }
 }

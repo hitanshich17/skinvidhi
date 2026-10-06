@@ -2,6 +2,7 @@ package com.skinvidhi.core.routine;
 
 import static com.skinvidhi.core.ingredient.IngredientTag.AHA;
 
+import com.skinvidhi.core.ingredient.IngredientTag;
 import com.skinvidhi.core.routine.RoutinePlan.Note;
 import com.skinvidhi.core.routine.RoutinePlan.Step;
 import java.util.ArrayList;
@@ -16,6 +17,9 @@ import java.util.Objects;
  * <p>It starts from each step's best-ranked product. While the total is over budget, it makes the swap that saves
  * the most money per place given up in the rankings, always moving to a cheaper product further down a step's
  * list. A product used in both AM and PM is paid for once, so swapping it means swapping it in both steps.
+ *
+ * <p>Last resort: if the routine is still over budget, the night treatment may switch to the concern's next
+ * active (e.g. vitamin C instead of BHA for dullness), with a note saying so.
  */
 public final class RoutineSelector {
 
@@ -26,8 +30,31 @@ public final class RoutineSelector {
     }
 
     public static Routine select(RoutinePlan plan, Integer budgetCents) {
+        Routine best = select(plan.candidates(), plan.treatmentActive(), plan.notes(), budgetCents);
+        if (best.withinBudget()) {
+            return best;
+        }
+        for (Map.Entry<IngredientTag, List<RoutineProduct>> fallback : plan.budgetFallbacks().entrySet()) {
+            Map<Step, List<RoutineProduct>> candidates = new EnumMap<>(plan.candidates());
+            candidates.put(Step.PM_TREATMENT, fallback.getValue());
+            List<Note> notes = new ArrayList<>(plan.notes());
+            notes.remove(Note.forTreatment(plan.treatmentActive()));
+            if (Note.forTreatment(fallback.getKey()) != null) {
+                notes.add(Note.forTreatment(fallback.getKey()));
+            }
+            notes.add(Note.TREATMENT_CHANGED_FOR_BUDGET);
+            Routine switched = select(candidates, fallback.getKey(), notes, budgetCents);
+            if (switched.withinBudget()) {
+                return switched;
+            }
+        }
+        return best; // nothing fits: keep the best match, with the over-budget note
+    }
+
+    private static Routine select(Map<Step, List<RoutineProduct>> candidates, IngredientTag treatmentActive,
+                                  List<Note> planNotes, Integer budgetCents) {
         Map<Step, List<RoutineProduct>> lists = new EnumMap<>(Step.class);
-        plan.candidates().forEach((step, products) -> {
+        candidates.forEach((step, products) -> {
             if (!products.isEmpty()) {
                 lists.put(step, products);
             }
@@ -54,7 +81,7 @@ public final class RoutineSelector {
             picks.put(step, new Routine.Pick(product, cheaper));
         });
 
-        List<Note> notes = new ArrayList<>(plan.notes());
+        List<Note> notes = new ArrayList<>(planNotes);
         boolean ahaPicked = picks.values().stream().anyMatch(p -> p.product().hasMainActive(AHA));
         if (ahaPicked && !notes.contains(Note.AHA_SUNBURN_ALERT)) {
             notes.add(Note.AHA_SUNBURN_ALERT); // FDA alert applies to any AHA product, e.g. a glycolic cleanser
@@ -63,7 +90,7 @@ public final class RoutineSelector {
         if (budgetCents != null && total > budgetCents) {
             notes.add(Note.OVER_BUDGET);
         }
-        return new Routine(picks, plan.treatmentActive(), total, budgetCents, MonthlyCost.estimate(picks), notes);
+        return new Routine(picks, treatmentActive, total, budgetCents, MonthlyCost.estimate(picks), notes);
     }
 
     /** The cheaper choice that gives up the fewest ranking places per dollar saved, or null if none. */

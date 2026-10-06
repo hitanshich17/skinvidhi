@@ -34,7 +34,8 @@ AHAs, irritants, sensitivities). AI/ML is used where it solves a real problem:
 - A product can have several offers (retailer + size + price); the app shows the cheapest and compares.
 - Budget: filter on the upfront total, and also show an estimated monthly cost.
   "Best match within budget": start from each step's best-ranked product and swap to cheaper ones only
-  where the budget requires it; cheaper options are shown as alternatives.
+  where the budget requires it; cheaper options are shown as alternatives. Last resort: the treatment may
+  switch to the concern's next active (never to a retinoid), with a note. Budget slider starts at $40.
 - AM and PM cleanser/moisturizer may differ, but a product that fits both equally well is repeated
   (and paid for once).
 - Climate: Open-Meteo, last 30 days for the user's city, cached 24h in Redis. High UV ranks SPF 50+ first;

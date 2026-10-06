@@ -1,6 +1,8 @@
 package com.skinvidhi.core.routine;
 
 import com.skinvidhi.core.ingredient.IngredientTag;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -8,12 +10,21 @@ import java.util.Map;
  * Ranked candidate products for each routine step, before the budget is applied.
  *
  * @param treatmentActive the active the night treatment was chosen for, or null if none fits
+ * @param budgetFallbacks treatments for the concern's next actives, in order of preference; used only when the
+ *                        routine can't fit the budget otherwise (never retinoids: the other steps weren't filtered
+ *                        for a retinoid night)
  */
-public record RoutinePlan(Map<Step, List<RoutineProduct>> candidates, IngredientTag treatmentActive, List<Note> notes) {
+public record RoutinePlan(Map<Step, List<RoutineProduct>> candidates, IngredientTag treatmentActive, List<Note> notes,
+                          Map<IngredientTag, List<RoutineProduct>> budgetFallbacks) {
 
     public RoutinePlan {
         candidates = Map.copyOf(candidates);
         notes = List.copyOf(notes);
+        budgetFallbacks = Collections.unmodifiableMap(new LinkedHashMap<>(budgetFallbacks)); // keeps the order
+    }
+
+    public RoutinePlan(Map<Step, List<RoutineProduct>> candidates, IngredientTag treatmentActive, List<Note> notes) {
+        this(candidates, treatmentActive, notes, Map.of());
     }
 
     /** The Core 4 routine: AM cleanser, moisturizer, sunscreen; PM cleanser, treatment, moisturizer. */
@@ -51,6 +62,8 @@ public record RoutinePlan(Map<Step, List<RoutineProduct>> candidates, Ingredient
                 + "and right after swimming or sweating."),
         AIR_POLLUTION("Air pollution in your city is linked to dark spots and wrinkles. Daily sunscreen and "
                 + "cleansing at night are the basics that help."),
+        TREATMENT_CHANGED_FOR_BUDGET("To fit your budget, your night treatment is a different type than our first "
+                + "choice for your concern. It still targets the same concern."),
         OVER_BUDGET("Even the lowest-priced routine that fits your answers costs more than your budget. "
                 + "This is that routine.");
 
@@ -62,6 +75,19 @@ public record RoutinePlan(Map<Step, List<RoutineProduct>> candidates, Ingredient
 
         public String text() {
             return text;
+        }
+
+        /** The note a treatment with this active always comes with, or null. */
+        public static Note forTreatment(IngredientTag active) {
+            if (active == null) {
+                return null;
+            }
+            return switch (active) {
+                case RETINOID -> RETINOID_START_SLOWLY;
+                case VITAMIN_C -> VITAMIN_C_NEEDS_SUNSCREEN;
+                case AHA -> AHA_SUNBURN_ALERT;
+                default -> null;
+            };
         }
     }
 }

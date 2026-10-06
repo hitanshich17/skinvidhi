@@ -288,4 +288,13 @@ class RoutineRulesTest {
         assertThat(ids(plan, Step.AM_CLEANSER)).containsExactly("oil-free-acne-wash", "gentle-cleanser");
         assertThat(ids(plan, Step.PM_CLEANSER)).containsExactly("oil-free-acne-wash", "gentle-cleanser");
     }
+
+    @Test
+    void budgetFallbacksAreTheConcernsNextActivesButNeverARetinoid() {
+        // Dark spots: vitamin C, azelaic acid, tranexamic acid, niacinamide, retinoid.
+        var plan = RoutineRules.plan(simple(Concern.DARK_SPOTS), CATALOG);
+
+        assertThat(plan.treatmentActive()).isEqualTo(VITAMIN_C);
+        assertThat(plan.budgetFallbacks().keySet()).containsExactly(AZELAIC_ACID, NIACINAMIDE);
+    }
 }

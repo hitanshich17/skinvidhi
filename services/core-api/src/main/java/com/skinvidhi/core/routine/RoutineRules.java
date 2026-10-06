@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -76,21 +77,20 @@ public final class RoutineRules {
                 .filter(this::passesEveryStepFilters)
                 .toList();
 
-        IngredientTag treatmentActive = null;
-        List<RoutineProduct> treatments = List.of();
-        for (Concern concern : answers.concerns().subList(0, 1)) { // the first concern picks the treatment
-            for (IngredientTag active : TREATMENTS.get(concern)) {
-                List<RoutineProduct> matching = inCategory(allowed, "treatment").stream()
-                        .filter(p -> p.hasMainActive(active))
-                        .filter(this::treatmentIsSuitable)
-                        .toList();
-                if (!matching.isEmpty()) {
-                    treatmentActive = active;
-                    treatments = rank(matching, secondConcernCoverage().thenComparing(byPrice()));
-                    break;
-                }
+        // The first concern picks the treatment: its first active that has a suitable product.
+        Map<IngredientTag, List<RoutineProduct>> byActive = new LinkedHashMap<>();
+        for (IngredientTag active : TREATMENTS.get(answers.concerns().get(0))) {
+            List<RoutineProduct> matching = inCategory(allowed, "treatment").stream()
+                    .filter(p -> p.hasMainActive(active))
+                    .filter(this::treatmentIsSuitable)
+                    .toList();
+            if (!matching.isEmpty()) {
+                byActive.put(active, rank(matching, secondConcernCoverage().thenComparing(byPrice())));
             }
         }
+        IngredientTag treatmentActive = byActive.isEmpty() ? null : byActive.keySet().iterator().next();
+        List<RoutineProduct> treatments = treatmentActive == null ? List.of() : byActive.remove(treatmentActive);
+        byActive.remove(RETINOID); // never a budget fallback: the other steps weren't filtered for a retinoid night
         boolean retinoidNight = treatmentActive == RETINOID;
 
         Map<Step, List<RoutineProduct>> candidates = new EnumMap<>(Step.class);
@@ -106,12 +106,8 @@ public final class RoutineRules {
 
         if (treatmentActive == null) {
             notes.add(Note.NO_TREATMENT_FITS);
-        } else if (treatmentActive == RETINOID) {
-            notes.add(Note.RETINOID_START_SLOWLY);
-        } else if (treatmentActive == VITAMIN_C) {
-            notes.add(Note.VITAMIN_C_NEEDS_SUNSCREEN);
-        } else if (treatmentActive == AHA) {
-            notes.add(Note.AHA_SUNBURN_ALERT);
+        } else if (Note.forTreatment(treatmentActive) != null) {
+            notes.add(Note.forTreatment(treatmentActive));
         }
         if (answers.pregnant()) {
             notes.add(Note.NO_RETINOIDS_IN_PREGNANCY);
@@ -125,7 +121,7 @@ public final class RoutineRules {
         if (climateHas(Signal.POLLUTED)) {
             notes.add(Note.AIR_POLLUTION);
         }
-        return new RoutinePlan(candidates, treatmentActive, notes);
+        return new RoutinePlan(candidates, treatmentActive, notes, byActive);
     }
 
     // ---- Filters for every step (docs/routine-rules.md, section 2) ----
