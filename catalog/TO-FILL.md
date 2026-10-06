@@ -171,9 +171,7 @@ These offers have a price but no size, and the pages don't state it in a form Cl
 Dullness's first-choice treatment is an AHA, and the catalog had none. The Ordinary Lactic Acid 10% + HA was read
 from its brand page. These two need you:
 
-- [ ] **Paula's Choice Skin Perfecting 8% AHA Gel Exfoliant**: ~~ingredient list~~ (done), price + size (the brand page loads
-  its ingredient list in a way Claude can't read). Page: https://www.paulaschoice.com/skin-perfecting-8pct-aha-gel-exfoliant/190.html
-  id: `paulas-choice-8-aha-gel-exfoliant`
+- [x] **Paula's Choice Skin Perfecting 8% AHA Gel Exfoliant**: added ($37 / 3.3 fl oz on Amazon; ingredients from the author).
 - [x] **COSRX AHA 7 Whitehead Power Liquid**: added ($22 / 3.38 fl oz at Nordstrom; ingredients from the author). COSRX's US store lists
   it at $22 / 100 ml but its product page is not published (404), so it may no longer be sold there.
   id: `cosrx-aha-7-whitehead-power-liquid`
