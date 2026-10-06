@@ -55,7 +55,8 @@ public enum IngredientTag {
 
     AHA("^(glycolic acid|lactic acid|mandelic acid)$"),
 
-    BHA("^(salicylic acid|betaine salicylate)$"),
+    /** Salicylic acid only: betaine salicylate is a much milder relative and doesn't count (author's decision). */
+    BHA("^salicylic acid$"),
 
     VITAMIN_C("\\b(ascorbic acid|ascorbyl|ascorbate)\\b"),
 

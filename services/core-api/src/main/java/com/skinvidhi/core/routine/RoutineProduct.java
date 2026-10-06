@@ -82,4 +82,10 @@ public record RoutineProduct(
     }
 
     public enum Texture { LIGHT, RICH, UNKNOWN }
+
+    /** Cleansing balms and oils remove makeup and sunscreen; they are never picked as the routine cleanser. */
+    public boolean makeupRemover() {
+        return "cleanser".equals(category)
+                && name.toLowerCase().matches(".*\\b(cleansing (balm|oil)|(balm|oil) cleanser)\\b.*");
+    }
 }

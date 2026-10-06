@@ -278,4 +278,14 @@ class RoutineRulesTest {
         assertThat(smoggy.notes()).contains(Note.AIR_POLLUTION);
         assertThat(smoggy.candidates()).isEqualTo(clean.candidates());
     }
+
+    @Test
+    void cleansingBalmsAndOilsAreNeverTheRoutineCleanser() {
+        var balm = p("oat-cleansing-balm", "cleanser", 500);
+        var oil = p("pore-cleansing-oil", "cleanser", 600);
+        var oilFreeWash = p("oil-free-acne-wash", "cleanser", 700);
+        var plan = RoutineRules.plan(simple(Concern.DULLNESS), List.of(balm, oil, oilFreeWash, GENTLE_CLEANSER));
+        assertThat(ids(plan, Step.AM_CLEANSER)).containsExactly("oil-free-acne-wash", "gentle-cleanser");
+        assertThat(ids(plan, Step.PM_CLEANSER)).containsExactly("oil-free-acne-wash", "gentle-cleanser");
+    }
 }

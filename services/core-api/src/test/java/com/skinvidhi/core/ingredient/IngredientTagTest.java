@@ -70,7 +70,7 @@ class IngredientTagTest {
         assertThat(tags("Citric Acid")).isEmpty();
         assertThat(tags("Lactic Acid/Glycolic Acid Copolymer")).isEmpty();
         assertThat(tags("Salicylic Acid")).containsExactly(BHA);
-        assertThat(tags("Betaine Salicylate")).containsExactly(BHA);
+        assertThat(tags("Betaine Salicylate")).isEmpty(); // a milder relative, not counted as a BHA
         assertThat(tags("Butyloctyl Salicylate")).isEmpty(); // an emollient, not an exfoliant
         assertThat(tags("3-O-Ethyl Ascorbic Acid")).containsExactly(VITAMIN_C);
         assertThat(tags("Ascorbic Acid")).containsExactly(VITAMIN_C, L_ASCORBIC_ACID);

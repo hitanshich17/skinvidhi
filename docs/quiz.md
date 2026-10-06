@@ -11,7 +11,7 @@ Every question must change the routine; if it doesn't, it doesn't belong here.
 | 4 | Anything you know you should avoid? (optional) | any | Fragrance, Essential oils, Alcohol, Nuts, Soy, None / not sure | Hard filters on ingredients. |
 | 5 | Have you used retinol or exfoliating acids before? | one choice | Never, A little, Yes, regularly | Strength of actives (beginner retinol vs 1% retinol / adapalene). |
 | 6 | Are you pregnant or breastfeeding? | one choice | Yes, No, Prefer not to say | "Yes" excludes retinoids. "Prefer not to say" changes nothing. |
-| 7 | What's your budget for the whole routine? | slider | $25 to $200+ | Filters on the upfront total; results also show a monthly cost. |
+| 7 | What's your budget for the whole routine? | slider | $40 to $200+ | Filters on the upfront total; results also show a monthly cost. |
 | 8 | Where do you live? | city search | autocomplete | Climate: high UV means stronger SPF, humidity means lighter textures. |
 | 9 | Your skin tone (optional) | swatch | 6 tones, Fitzpatrick-style | Deeper tones: no-white-cast sunscreens, extra care against dark marks. |
 

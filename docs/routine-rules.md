@@ -18,7 +18,7 @@ The first concern picks the treatment; options are tried in order until one fits
 
 | Concern | Treatment options, in order | Evidence |
 |---|---|---|
-| Breakouts | 1. Retinoid (adapalene, retinol) 2. Azelaic acid 3. BHA (salicylic acid) 4. Niacinamide. Benzoyl peroxide comes from the cleanser (see section 3). | Retinoids and benzoyl peroxide: **Strong**; salicylic acid and azelaic acid: **Moderate** (AAD acne guideline 2024 [1]). Niacinamide: **Limited** [6]. |
+| Breakouts | 1. Retinoid (adapalene, retinol) 2. Azelaic acid 3. BHA (salicylic acid only; betaine salicylate, a milder relative, does not count) 4. Niacinamide. Benzoyl peroxide comes from the cleanser (see section 3). | Retinoids and benzoyl peroxide: **Strong**; salicylic acid and azelaic acid: **Moderate** (AAD acne guideline 2024 [1]). Niacinamide: **Limited** [6]. |
 | Dark spots & marks | 1. Vitamin C 2. Azelaic acid 3. Tranexamic acid 4. Niacinamide 5. Retinoid | Vitamin C: **Moderate** [4]; azelaic acid for post-acne marks: **Moderate**, off-label [3]; tranexamic acid: **Moderate** [5]; niacinamide: **Limited** [6]; retinoids improve pigmentation: **Moderate** [7]. |
 | Uneven tone / discoloration | 1. Tranexamic acid 2. Azelaic acid 3. Vitamin C 4. Niacinamide | Topical tranexamic acid reduces melasma severity, more large trials needed: **Moderate** [5]; azelaic acid 20% comparable to hydroquinone: **Moderate**, off-label [3]; vitamin C: **Moderate** [4]. Tinted iron-oxide sunscreen matters most here (section 4). |
 | Fine lines | 1. Retinoid 2. Vitamin C 3. Peptides | Retinoids: **Strong** for tretinoin, retinol about 10x less potent but supported [7]; vitamin C: **Moderate** [4]; peptides: **Limited** [8]. |
@@ -63,6 +63,12 @@ The first concern picks the treatment; options are tried in order until one fits
 | Tinted sunscreen with iron oxides preferred for Dark spots, Discoloration, and deeper skin tones (Fitzpatrick IV-VI). | **Moderate**: visible light causes darker, longer-lasting pigmentation in skin of color; iron-oxide tinted sunscreens reduced melasma relapse [14]. |
 | Imported (not FDA-approved) sunscreens are labelled as such and can be hidden with the results filter. | Product rule. |
 
+## 4b. Cleansers
+
+| Rule | Why |
+|---|---|
+| Cleansing balms and oils (makeup removers) stay in the catalog but are never picked as the routine cleanser. | Product rule (author's decision): they are a first cleanse for makeup and sunscreen, not a daily face wash. A "double cleanse" option may come later. |
+
 ## 5. Picking one product per step (budget)
 
 These are product rules (the author's decisions), not skin-care evidence.
@@ -71,6 +77,7 @@ These are product rules (the author's decisions), not skin-care evidence.
 |---|---|
 | Products without a price (no offer) are never picked. | They can't be bought. |
 | AM and PM cleanser and moisturizer may differ, but if one product fits both steps as well as any other does, it is used in both. | Fewer products to buy; a product used twice is paid for once. |
+| The budget slider starts at $40 (docs/quiz.md): the cheapest full Core 4 routine in the catalog costs about $38. | Below that, every routine would be "over budget". |
 | Each step starts from its best-ranked product. While the total is over budget, the app swaps to a cheaper product further down a step's list, choosing the swap that saves the most money per ranking place given up. A product used in AM and PM is swapped in both. | "Best match within budget": the routine only gets worse where the budget forces it. |
 | If even the cheapest routine is over budget, the app shows it with a note saying so. | The user still gets a safe routine. |
 | Each step shows up to 3 cheaper alternatives, best match first. | Comparing prices is the point of the app. |

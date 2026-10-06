@@ -210,7 +210,7 @@ public final class RoutineRules {
             boolean allowActives = morning && experienced;
             keep = p -> allowActives || !(p.hasMainActive(BHA) || p.hasMainActive(BENZOYL_PEROXIDE) || p.hasMainActive(AHA));
         }
-        return inCategory(allowed, "cleanser").stream().filter(keep).toList();
+        return inCategory(allowed, "cleanser").stream().filter(keep).filter(p -> !p.makeupRemover()).toList();
     }
 
     /** How well a cleanser fits the answers, before price. */
