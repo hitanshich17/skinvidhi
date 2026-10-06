@@ -18,6 +18,10 @@ Decisions by the author; the details below follow from them.
 - It costs $0 in the upfront total (the user likely owns it); the monthly estimate still counts it, since it will
   need rebuying.
 - If a liked product fits both AM and PM, it is used in both.
+- A liked treatment can choose the treatment type: if its main active is one of the first concern's actives, that
+  active goes first (e.g. a liked niacinamide serum beats the retinoid for breakouts).
+- A liked product that fits nowhere (e.g. no longer safe) gets the note "A product you liked isn't in this routine
+  because it doesn't fit your current answers."
 
 ## Disliked
 
@@ -33,14 +37,20 @@ A disliked product never comes back for that client. The optional reason decides
 ### Suspect ingredients (for "irritated" dislikes)
 
 1. **First dislike**: the product's tagged irritants (fragrance, fragrance allergens, essential oils, drying
-   alcohol, menthol, camphor, sodium lauryl sulfate) and its main actives (e.g. AHA, BHA, retinoid,
-   benzoyl peroxide, L-ascorbic acid).
+   alcohol, menthol, camphor, sodium lauryl sulfate) and its strong main actives (AHA, BHA, retinoid,
+   benzoyl peroxide, L-ascorbic acid; not niacinamide or azelaic acid). A strong active that is only a trace
+   in another product (past position 10) doesn't rule that product out.
 2. **Two or more dislikes**: also every ingredient found in at least two disliked products and in no liked
    product. Ingredients in more than half of the catalog (water, glycerin, ...) are never suspects: they
    can't tell products apart.
 
 Suspects are excluded from **every** step, not only the step of the disliked product: a reaction to fragrance in
-a cleanser is a reaction to fragrance.
+a cleanser is a reaction to fragrance. If that leaves a step with no product, the step stays empty with a note,
+rather than suggesting a product with a suspect ingredient. The results page lists what was left out
+(`avoidedForYou`, e.g. "Fragrance").
+
+Order of work: disliked products and suspects are removed first, so every safety rule still applies to what is
+left; reasons and likes then only reorder or narrow each step's ranked list.
 
 ## Similarity (pgvector)
 

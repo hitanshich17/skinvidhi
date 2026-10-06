@@ -4,6 +4,7 @@ import static com.skinvidhi.core.ingredient.IngredientTag.*;
 
 import com.skinvidhi.core.climate.Climate;
 import com.skinvidhi.core.climate.Climate.Signal;
+import com.skinvidhi.core.feedback.Feedback.Reason;
 import com.skinvidhi.core.ingredient.IngredientTag;
 import com.skinvidhi.core.routine.QuizAnswers.ActivesExperience;
 import com.skinvidhi.core.routine.QuizAnswers.Avoid;
@@ -55,10 +56,12 @@ public final class RoutineRules {
 
     private final QuizAnswers answers;
     private final Climate climate;
+    private final TriedProducts tried;
 
-    private RoutineRules(QuizAnswers answers, Climate climate) {
+    private RoutineRules(QuizAnswers answers, Climate climate, TriedProducts tried) {
         this.answers = answers;
         this.climate = climate;
+        this.tried = tried;
     }
 
     public static RoutinePlan plan(QuizAnswers answers, List<RoutineProduct> catalog) {
@@ -67,25 +70,34 @@ public final class RoutineRules {
 
     /** @param climate the city's climate, or null if unknown (no city, or the lookup failed) */
     public static RoutinePlan plan(QuizAnswers answers, List<RoutineProduct> catalog, Climate climate) {
-        return new RoutineRules(answers, climate).plan(catalog);
+        return plan(answers, catalog, climate, TriedProducts.NONE);
+    }
+
+    /** @param tried what the client said about products they tried (docs/feedback.md) */
+    public static RoutinePlan plan(QuizAnswers answers, List<RoutineProduct> catalog, Climate climate,
+                                   TriedProducts tried) {
+        return new RoutineRules(answers, climate, tried).plan(catalog);
     }
 
     private RoutinePlan plan(List<RoutineProduct> catalog) {
         List<Note> notes = new ArrayList<>();
+        Suspects suspects = Suspects.find(tried, catalog);
         List<RoutineProduct> allowed = catalog.stream()
                 .filter(p -> p.offer() != null) // can't be bought, so never picked
                 .filter(this::passesEveryStepFilters)
+                .filter(p -> !tried.dislikes(p) && !suspects.excludes(p))
                 .toList();
 
         // The first concern picks the treatment: its first active that has a suitable product.
         Map<IngredientTag, List<RoutineProduct>> byActive = new LinkedHashMap<>();
-        for (IngredientTag active : TREATMENTS.get(answers.concerns().get(0))) {
+        for (IngredientTag active : treatmentActivesInOrder(catalog, allowed)) {
             List<RoutineProduct> matching = inCategory(allowed, "treatment").stream()
                     .filter(p -> p.hasMainActive(active))
                     .filter(this::treatmentIsSuitable)
                     .toList();
             if (!matching.isEmpty()) {
-                byActive.put(active, rank(matching, secondConcernCoverage().thenComparing(byPrice())));
+                byActive.put(active, adjust(catalog, "treatment",
+                        rank(matching, secondConcernCoverage().thenComparing(byPrice()))));
             }
         }
         IngredientTag treatmentActive = byActive.isEmpty() ? null : byActive.keySet().iterator().next();
@@ -103,6 +115,20 @@ public final class RoutineRules {
         candidates.put(Step.PM_MOISTURIZER, rank(moisturizers, moisturizerFit().thenComparing(byPrice())));
         preferRepeat(candidates, Step.AM_MOISTURIZER, Step.PM_MOISTURIZER, moisturizerFit());
         candidates.put(Step.AM_SUNSCREEN, sunscreens(allowed, retinoidNight));
+        // Feedback comes after the repeat preference, so a repeat can't bring back a disliked texture.
+        candidates.replaceAll((step, list) -> step == Step.PM_TREATMENT ? list : adjust(catalog, step.category(), list));
+        pinLiked(candidates);
+
+        Set<RoutineProduct> owned = new java.util.HashSet<>();
+        candidates.values().forEach(list -> list.stream().limit(1).filter(tried::likes).forEach(owned::add));
+        boolean likedLeftOut = catalog.stream().filter(tried::likes)
+                .anyMatch(p -> candidates.values().stream().noneMatch(list -> list.contains(p)));
+        if (likedLeftOut) {
+            notes.add(Note.LIKED_PRODUCT_LEFT_OUT);
+        }
+        if (candidates.entrySet().stream().anyMatch(e -> e.getKey() != Step.PM_TREATMENT && e.getValue().isEmpty())) {
+            notes.add(Note.NO_PRODUCT_FITS_STEP);
+        }
 
         if (treatmentActive == null) {
             notes.add(Note.NO_TREATMENT_FITS);
@@ -121,7 +147,62 @@ public final class RoutineRules {
         if (climateHas(Signal.POLLUTED)) {
             notes.add(Note.AIR_POLLUTION);
         }
-        return new RoutinePlan(candidates, treatmentActive, notes, byActive);
+        return new RoutinePlan(candidates, treatmentActive, notes, byActive, owned, suspects.labels());
+    }
+
+    // ---- Feedback (docs/feedback.md) ----
+
+    /**
+     * The first concern's treatment actives, in order: an active of a liked, suitable treatment goes first; actives
+     * of treatments disliked as "didn't work" go last.
+     */
+    private List<IngredientTag> treatmentActivesInOrder(List<RoutineProduct> catalog, List<RoutineProduct> allowed) {
+        List<IngredientTag> actives = new ArrayList<>(TREATMENTS.get(answers.concerns().get(0)));
+        tried.disliked(catalog, Reason.DIDNT_WORK).stream()
+                .filter(p -> "treatment".equals(p.category()))
+                .forEach(p -> actives.sort(Comparator.comparing(p::hasMainActive))); // stable: others keep order
+        inCategory(allowed, "treatment").stream()
+                .filter(tried::likes)
+                .filter(this::treatmentIsSuitable)
+                .flatMap(p -> actives.stream().filter(p::hasMainActive).limit(1))
+                .findFirst()
+                .ifPresent(active -> {
+                    actives.remove(active);
+                    actives.add(0, active);
+                });
+        return actives;
+    }
+
+    /**
+     * Applies dislike reasons to one step's ranked list: "too pricey" keeps only cheaper products (if any are left),
+     * "texture" moves the disliked texture to the end.
+     */
+    private List<RoutineProduct> adjust(List<RoutineProduct> catalog, String category, List<RoutineProduct> ranked) {
+        List<RoutineProduct> list = new ArrayList<>(ranked);
+        tried.disliked(catalog, Reason.TOO_PRICEY).stream()
+                .filter(p -> category.equals(p.category()) && p.offer() != null)
+                .mapToInt(RoutineProduct::cheapestPriceCents)
+                .min()
+                .ifPresent(cap -> {
+                    if (list.stream().anyMatch(p -> p.cheapestPriceCents() < cap)) {
+                        list.removeIf(p -> p.cheapestPriceCents() >= cap);
+                    }
+                });
+        Set<Texture> avoided = EnumSet.noneOf(Texture.class);
+        tried.disliked(catalog, Reason.TEXTURE).stream()
+                .filter(p -> category.equals(p.category()) && p.texture() != Texture.UNKNOWN)
+                .forEach(p -> avoided.add(p.texture()));
+        list.sort(Comparator.comparing(p -> avoided.contains(p.texture()))); // stable
+        return list;
+    }
+
+    /** A liked product stays in its step: the best-ranked liked one moves to the front. */
+    private void pinLiked(Map<Step, List<RoutineProduct>> candidates) {
+        candidates.replaceAll((step, list) -> {
+            List<RoutineProduct> pinned = new ArrayList<>(list);
+            pinned.sort(Comparator.comparing(p -> !tried.likes(p))); // stable
+            return pinned;
+        });
     }
 
     // ---- Filters for every step (docs/routine-rules.md, section 2) ----

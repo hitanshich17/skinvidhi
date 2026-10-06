@@ -12,10 +12,11 @@ import java.util.List;
  * @param treatmentActive what the night treatment was chosen for (e.g. "RETINOID"), or null if none fits
  * @param climate the city's climate, or null if no city was given or it wasn't found
  * @param sessionId id of the stored routine (send it with feedback), or null without a client id
+ * @param avoidedForYou what is left out because of past reactions, in words (e.g. "Fragrance")
  */
 public record RoutineResponse(List<StepPick> am, List<StepPick> pm, IngredientTag treatmentActive,
                               int totalCents, Integer budgetCents, boolean withinBudget, Integer monthlyCents,
-                              CityClimate climate, List<NoteText> notes, Long sessionId) {
+                              CityClimate climate, List<NoteText> notes, Long sessionId, List<String> avoidedForYou) {
 
     /**
      * What the routine was adjusted for. The page must credit "Weather data by Open-Meteo.com" (CC BY 4.0).
@@ -32,8 +33,11 @@ public record RoutineResponse(List<StepPick> am, List<StepPick> pm, IngredientTa
         }
     }
 
-    /** @param step the step's category: cleanser, treatment, moisturizer or sunscreen */
-    public record StepPick(String step, Product product, List<Product> cheaperAlternatives) {
+    /**
+     * @param step the step's category: cleanser, treatment, moisturizer or sunscreen
+     * @param alreadyOwned the client liked this product, so it isn't counted in the upfront total
+     */
+    public record StepPick(String step, Product product, List<Product> cheaperAlternatives, boolean alreadyOwned) {
     }
 
     public record Product(String id, String brand, String name, Integer spf, boolean imported,
@@ -51,7 +55,7 @@ public record RoutineResponse(List<StepPick> am, List<StepPick> pm, IngredientTa
         return new RoutineResponse(steps(routine, "AM_"), steps(routine, "PM_"), routine.treatmentActive(),
                 routine.totalCents(), routine.budgetCents(), routine.withinBudget(), routine.monthlyCents(),
                 CityClimate.of(climate), routine.notes().stream().map(n -> new NoteText(n, n.text())).toList(),
-                sessionId);
+                sessionId, routine.avoided());
     }
 
     private static List<StepPick> steps(Routine routine, String prefix) {
@@ -60,7 +64,7 @@ public record RoutineResponse(List<StepPick> am, List<StepPick> pm, IngredientTa
                 .map(step -> {
                     Routine.Pick pick = routine.picks().get(step);
                     return new StepPick(step.category(), Product.of(pick.product()),
-                            pick.cheaperAlternatives().stream().map(Product::of).toList());
+                            pick.cheaperAlternatives().stream().map(Product::of).toList(), pick.owned());
                 })
                 .toList();
     }

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Ranked candidate products for each routine step, before the budget is applied.
@@ -13,14 +14,24 @@ import java.util.Map;
  * @param budgetFallbacks treatments for the concern's next actives, in order of preference; used only when the
  *                        routine can't fit the budget otherwise (never retinoids: the other steps weren't filtered
  *                        for a retinoid night)
+ * @param owned liked products in the routine: the client likely owns them, so they cost $0 upfront
+ * @param avoided what is left out because of the client's reactions, in words (docs/feedback.md)
  */
 public record RoutinePlan(Map<Step, List<RoutineProduct>> candidates, IngredientTag treatmentActive, List<Note> notes,
-                          Map<IngredientTag, List<RoutineProduct>> budgetFallbacks) {
+                          Map<IngredientTag, List<RoutineProduct>> budgetFallbacks, Set<RoutineProduct> owned,
+                          List<String> avoided) {
 
     public RoutinePlan {
         candidates = Map.copyOf(candidates);
         notes = List.copyOf(notes);
         budgetFallbacks = Collections.unmodifiableMap(new LinkedHashMap<>(budgetFallbacks)); // keeps the order
+        owned = Set.copyOf(owned);
+        avoided = List.copyOf(avoided);
+    }
+
+    public RoutinePlan(Map<Step, List<RoutineProduct>> candidates, IngredientTag treatmentActive, List<Note> notes,
+                       Map<IngredientTag, List<RoutineProduct>> budgetFallbacks) {
+        this(candidates, treatmentActive, notes, budgetFallbacks, Set.of(), List.of());
     }
 
     public RoutinePlan(Map<Step, List<RoutineProduct>> candidates, IngredientTag treatmentActive, List<Note> notes) {
@@ -64,6 +75,10 @@ public record RoutinePlan(Map<Step, List<RoutineProduct>> candidates, Ingredient
                 + "cleansing at night are the basics that help."),
         TREATMENT_CHANGED_FOR_BUDGET("To fit your budget, your night treatment is a different type than our first "
                 + "choice for your concern. It still targets the same concern."),
+        LIKED_PRODUCT_LEFT_OUT("A product you liked isn't in this routine because it doesn't fit your current "
+                + "answers."),
+        NO_PRODUCT_FITS_STEP("For at least one step, no product in our catalog fits all your answers and past "
+                + "reactions, so that step is left empty."),
         OVER_BUDGET("Even the lowest-priced routine that fits your answers costs more than your budget. "
                 + "This is that routine.");
 

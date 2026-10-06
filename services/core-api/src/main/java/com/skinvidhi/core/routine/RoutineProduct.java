@@ -11,6 +11,7 @@ import java.util.Set;
  * @param firstPositions for each tag, the earliest label position of an ingredient with that tag;
  *                       0 means the ingredient is a declared OTC active (adapalene, benzoyl peroxide, UV filters)
  * @param offer the cheapest offer, or null if the product has no offer (it can't be bought, so it's never picked)
+ * @param ingredients canonical ingredient names on the label (used to find suspect ingredients)
  */
 public record RoutineProduct(
         String id,
@@ -20,7 +21,8 @@ public record RoutineProduct(
         Integer spf,
         boolean imported,
         Map<IngredientTag, Integer> firstPositions,
-        Offer offer) {
+        Offer offer,
+        Set<String> ingredients) {
 
     /** Where to buy, and for how much. {@code sizeAmount} is in ml or g, or null if unknown. */
     public record Offer(String retailer, int priceCents, BigDecimal sizeAmount, String sizeUnit, String url) {
@@ -34,6 +36,12 @@ public record RoutineProduct(
 
     public RoutineProduct {
         firstPositions = Map.copyOf(firstPositions);
+        ingredients = Set.copyOf(ingredients);
+    }
+
+    public RoutineProduct(String id, String brand, String name, String category, Integer spf, boolean imported,
+                          Map<IngredientTag, Integer> firstPositions, Offer offer) {
+        this(id, brand, name, category, spf, imported, firstPositions, offer, Set.of());
     }
 
     public Integer cheapestPriceCents() {

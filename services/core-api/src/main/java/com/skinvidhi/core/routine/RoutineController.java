@@ -2,6 +2,7 @@ package com.skinvidhi.core.routine;
 
 import com.skinvidhi.core.climate.Climate;
 import com.skinvidhi.core.climate.ClimateService;
+import com.skinvidhi.core.feedback.FeedbackRepository;
 import com.skinvidhi.core.feedback.QuizSessionRepository;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,18 +29,22 @@ public class RoutineController {
     private final RoutineCatalog catalog;
     private final ClimateService climateService;
     private final QuizSessionRepository sessions;
+    private final FeedbackRepository feedback;
 
-    public RoutineController(RoutineCatalog catalog, ClimateService climateService, QuizSessionRepository sessions) {
+    public RoutineController(RoutineCatalog catalog, ClimateService climateService, QuizSessionRepository sessions,
+                             FeedbackRepository feedback) {
         this.catalog = catalog;
         this.climateService = climateService;
         this.sessions = sessions;
+        this.feedback = feedback;
     }
 
     @PostMapping
     public RoutineResponse build(@RequestHeader(value = "X-Client-Id", required = false) UUID clientId,
                                  @RequestBody QuizAnswers answers) {
         Climate climate = climateService.climateFor(answers.city()).orElse(null);
-        RoutinePlan plan = RoutineRules.plan(answers, catalog.load(), climate);
+        TriedProducts tried = clientId == null ? TriedProducts.NONE : TriedProducts.from(feedback.findAll(clientId));
+        RoutinePlan plan = RoutineRules.plan(answers, catalog.load(), climate, tried);
         Routine routine = RoutineSelector.select(plan, answers.budgetCents());
         Long sessionId = null;
         if (clientId != null) {

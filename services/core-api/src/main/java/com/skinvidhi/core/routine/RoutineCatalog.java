@@ -2,9 +2,12 @@ package com.skinvidhi.core.routine;
 
 import com.skinvidhi.core.ingredient.IngredientTag;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -62,9 +65,19 @@ public class RoutineCatalog {
                 row.positions().put(IngredientTag.valueOf(tag), rs.getInt("first_position"));
             }
         });
+        Map<String, Set<String>> ingredients = new HashMap<>();
+        jdbc.query("""
+                SELECT p.source_id, i.inci_name
+                FROM products p
+                JOIN product_ingredients pi ON pi.product_id = p.id
+                JOIN ingredients i ON i.id = pi.ingredient_id
+                WHERE p.source = 'curated'
+                """, rs -> {
+            ingredients.computeIfAbsent(rs.getString("source_id"), id -> new HashSet<>()).add(rs.getString("inci_name"));
+        });
         return rows.values().stream()
                 .map(r -> new RoutineProduct(r.id(), r.brand(), r.name(), r.category(), r.spf(), r.imported(),
-                        r.positions(), r.offer()))
+                        r.positions(), r.offer(), ingredients.getOrDefault(r.id(), Set.of())))
                 .toList();
     }
 }

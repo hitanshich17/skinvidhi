@@ -10,6 +10,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Picks one product per step from a {@link RoutinePlan}, within the budget ("best match within budget").
@@ -30,7 +31,7 @@ public final class RoutineSelector {
     }
 
     public static Routine select(RoutinePlan plan, Integer budgetCents) {
-        Routine best = select(plan.candidates(), plan.treatmentActive(), plan.notes(), budgetCents);
+        Routine best = select(plan, plan.candidates(), plan.treatmentActive(), plan.notes(), budgetCents);
         if (best.withinBudget()) {
             return best;
         }
@@ -43,7 +44,7 @@ public final class RoutineSelector {
                 notes.add(Note.forTreatment(fallback.getKey()));
             }
             notes.add(Note.TREATMENT_CHANGED_FOR_BUDGET);
-            Routine switched = select(candidates, fallback.getKey(), notes, budgetCents);
+            Routine switched = select(plan, candidates, fallback.getKey(), notes, budgetCents);
             if (switched.withinBudget()) {
                 return switched;
             }
@@ -51,8 +52,9 @@ public final class RoutineSelector {
         return best; // nothing fits: keep the best match, with the over-budget note
     }
 
-    private static Routine select(Map<Step, List<RoutineProduct>> candidates, IngredientTag treatmentActive,
-                                  List<Note> planNotes, Integer budgetCents) {
+    private static Routine select(RoutinePlan plan, Map<Step, List<RoutineProduct>> candidates,
+                                  IngredientTag treatmentActive, List<Note> planNotes, Integer budgetCents) {
+        Set<RoutineProduct> owned = plan.owned();
         Map<Step, List<RoutineProduct>> lists = new EnumMap<>(Step.class);
         candidates.forEach((step, products) -> {
             if (!products.isEmpty()) {
@@ -62,8 +64,8 @@ public final class RoutineSelector {
         Map<Step, Integer> chosen = new EnumMap<>(Step.class); // index into each step's list
         lists.keySet().forEach(step -> chosen.put(step, 0));
 
-        while (budgetCents != null && total(lists, chosen) > budgetCents) {
-            Map<Step, Integer> best = bestSwap(lists, chosen);
+        while (budgetCents != null && total(lists, chosen, owned) > budgetCents) {
+            Map<Step, Integer> best = bestSwap(lists, chosen, owned);
             if (best == null) {
                 break; // nothing cheaper left anywhere
             }
@@ -78,7 +80,8 @@ public final class RoutineSelector {
                     .filter(p -> !p.equals(product) && p.cheapestPriceCents() < product.cheapestPriceCents())
                     .limit(ALTERNATIVES)
                     .toList();
-            picks.put(step, new Routine.Pick(product, cheaper));
+            boolean isOwned = owned.contains(product);
+            picks.put(step, new Routine.Pick(product, isOwned ? List.of() : cheaper, isOwned));
         });
 
         List<Note> notes = new ArrayList<>(planNotes);
@@ -86,23 +89,25 @@ public final class RoutineSelector {
         if (ahaPicked && !notes.contains(Note.AHA_SUNBURN_ALERT)) {
             notes.add(Note.AHA_SUNBURN_ALERT); // FDA alert applies to any AHA product, e.g. a glycolic cleanser
         }
-        int total = total(lists, chosen);
+        int total = total(lists, chosen, owned);
         if (budgetCents != null && total > budgetCents) {
             notes.add(Note.OVER_BUDGET);
         }
-        return new Routine(picks, treatmentActive, total, budgetCents, MonthlyCost.estimate(picks), notes);
+        return new Routine(picks, treatmentActive, total, budgetCents, MonthlyCost.estimate(picks), notes,
+                plan.avoided());
     }
 
     /** The cheaper choice that gives up the fewest ranking places per dollar saved, or null if none. */
-    private static Map<Step, Integer> bestSwap(Map<Step, List<RoutineProduct>> lists, Map<Step, Integer> chosen) {
-        int current = total(lists, chosen);
+    private static Map<Step, Integer> bestSwap(Map<Step, List<RoutineProduct>> lists, Map<Step, Integer> chosen,
+                                               Set<RoutineProduct> owned) {
+        int current = total(lists, chosen, owned);
         Map<Step, Integer> best = null;
         double bestScore = 0;
         for (Step step : chosen.keySet()) {
             RoutineProduct from = lists.get(step).get(chosen.get(step));
             for (int i = chosen.get(step) + 1; i < lists.get(step).size(); i++) {
                 Map<Step, Integer> next = replace(lists, chosen, from, lists.get(step).get(i), step);
-                int saved = current - total(lists, next);
+                int saved = current - total(lists, next, owned);
                 if (saved <= 0) {
                     continue;
                 }
@@ -135,10 +140,13 @@ public final class RoutineSelector {
         return after.keySet().stream().mapToInt(s -> Math.abs(after.get(s) - before.get(s))).sum();
     }
 
-    private static int total(Map<Step, List<RoutineProduct>> lists, Map<Step, Integer> chosen) {
+    /** Upfront cost: each product once, and nothing for products the client already owns. */
+    private static int total(Map<Step, List<RoutineProduct>> lists, Map<Step, Integer> chosen,
+                             Set<RoutineProduct> owned) {
         return chosen.entrySet().stream()
                 .map(e -> lists.get(e.getKey()).get(e.getValue()))
                 .distinct()
+                .filter(p -> !owned.contains(p))
                 .map(RoutineProduct::cheapestPriceCents)
                 .filter(Objects::nonNull)
                 .mapToInt(Integer::intValue)
